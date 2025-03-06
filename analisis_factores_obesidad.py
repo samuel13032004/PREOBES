@@ -23,6 +23,7 @@ def analizar_factores_obesidad(X, y):
     if 'IMC' in X_analysis.columns:
         X_analysis = X_analysis.drop('IMC', axis=1)
 
+    X_analysis = X_analysis.drop(columns=['Weight'], axis=1)
     # Guardar las columnas originales para usarlas más tarde
     original_columns = X_analysis.columns.tolist()
 
@@ -64,14 +65,9 @@ def analizar_factores_obesidad(X, y):
     feature_importance_df = feature_importance_df.sort_values("Importancia", ascending=False)
 
     # Clasificar variables como modificables o no modificables
-    no_modificables = ['Gender', 'Age', 'Height', 'family_history_with_overweight', 'Weight']
+    no_modificables = ['Gender', 'Age', 'Height', 'family_history_with_overweight']
 
-    # Verificamos que 'Weight' esté en las columnas (lo movemos a modificables aunque parece confuso)
-    if 'Weight' in feature_importance_df.index:
-        modificables = [col for col in feature_importance_df.index if col not in no_modificables]
-    else:
-        modificables = [col for col in feature_importance_df.index if col not in no_modificables]
-        print("ADVERTENCIA: 'Weight' no está en las columnas del modelo")
+    modificables = [col for col in feature_importance_df.index if col not in no_modificables]
 
     # Filtrar solo las variables modificables y no modificables que están presentes en el índice
     df_modificables = feature_importance_df.loc[

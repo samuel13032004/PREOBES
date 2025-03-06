@@ -45,12 +45,10 @@ def main():
         plt.xlabel("Importancia Normalizada")
         plt.ylabel("Características")
         plt.title("Importancia de las Características en el Modelo")
-        plt.tight_layout()
-        plt.close()
 
     except Exception as e:
         print(f"✗ Error en análisis de importancia: {str(e)}")
-    """
+
     # 3. Entrenamiento del modelo
     print("\n3. ENTRENANDO MODELO DE CLASIFICACIÓN...")
     try:
@@ -75,7 +73,7 @@ def main():
 
     print("\n" + "=" * 80)
     print("=" * 80)
-"""
+
     # 4. Análisis de factores de obesidad
     print("\n4. ANALIZANDO FACTORES DE OBESIDAD...")
 
