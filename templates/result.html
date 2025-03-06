@@ -2,11 +2,203 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Resultado de la Evaluación</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado de la Evaluación de Riesgo de Obesidad</title>
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --background-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-radius: 8px;
+            --shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            text-align: center;
+        }
+
+        header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-color);
+            font-weight: 300;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+
+        .result-card {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--primary-color);
+        }
+
+        .result-description {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .recommendation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(28, 200, 138, 0.1);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--secondary-color);
+            text-align: left;
+        }
+
+        .recommendation h3 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background-color: rgba(78, 115, 223, 0.2);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .recommendation p {
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Resultado de la Evaluación</h1>
-    <p>El nivel de obesidad predicho es: <strong>{{ prediction }}</strong></p>
-    <a href="/">Realizar otra evaluación</a>
+    <div class="container">
+        <header>
+            <h1>Resultado de la Evaluación</h1>
+            <p class="subtitle">Análisis de riesgo de obesidad basado en sus datos personales y hábitos</p>
+        </header>
+
+        <div class="result-card">
+            <h2>Su nivel de riesgo es:</h2>
+            <div class="result-value">{{ prediction }}</div>
+            <p class="result-description">
+                Este resultado se basa en los datos proporcionados sobre sus características personales,
+                hábitos alimenticios y estilo de vida.
+            </p>
+        </div>
+
+        <div class="recommendation">
+            <h3>Recomendaciones personalizadas <span class="ai-badge">Generado por IA</span></h3>
+
+            <!-- Mostrar recomendaciones generadas por IA -->
+            {% if ai_recommendation %}
+                {% for paragraph in ai_recommendation.split('\n\n') %}
+                    {% if paragraph.strip() %}
+                        <p>{{ paragraph }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <!-- Respaldo en caso de que la IA no genere recomendaciones -->
+                <p>
+                    {% if prediction == "Insufficient_Weight" %}
+                        Su peso está por debajo del rango recomendado. Considere consultar con un nutricionista
+                        para desarrollar un plan alimenticio que le ayude a ganar peso de manera saludable.
+                    {% elif prediction == "Normal_Weight" %}
+                        ¡Felicidades! Su peso se encuentra dentro del rango saludable. Continúe manteniendo
+                        buenos hábitos alimenticios y actividad física regular.
+                    {% elif prediction == "Overweight_Level_I" %}
+                        Su peso está ligeramente por encima del rango recomendado. Considere incrementar su
+                        actividad física y revisar sus hábitos alimenticios.
+                    {% elif prediction == "Overweight_Level_II" %}
+                        Su peso está moderadamente por encima del rango recomendado. Se sugiere incrementar
+                        la actividad física y consultar con un profesional de la salud.
+                    {% elif prediction == "Obesity_Type_I" %}
+                        Se detecta obesidad tipo I. Recomendamos consultar con un profesional de la salud
+                        para desarrollar un plan personalizado.
+                    {% elif prediction == "Obesity_Type_II" %}
+                        Se detecta obesidad tipo II. Es importante consultar con un médico para recibir
+                        orientación profesional y un plan de tratamiento adecuado.
+                    {% elif prediction == "Obesity_Type_III" %}
+                        Se detecta obesidad tipo III. Le recomendamos buscar atención médica lo antes posible
+                        para recibir orientación profesional especializada.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        <a href="/" class="btn-primary">Realizar otra evaluación</a>
+    </div>
 </body>
 </html>
