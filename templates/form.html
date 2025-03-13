@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación de Riesgo de Obesidad</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         :root {
             --primary-color: #4e73df;
@@ -14,6 +15,8 @@
             --text-color: #e0e0e0;
             --input-bg: #2d2d2d;
             --input-border: #3d3d3d;
+            --tab-active: #4e73df;
+            --tab-inactive: #2e3e6a;
             --border-radius: 8px;
             --shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.5);
             --section-border: #4e73df;
@@ -34,7 +37,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background-color: var(--card-color);
             border-radius: var(--border-radius);
@@ -58,6 +61,48 @@
             color: var(--text-color);
             font-weight: 300;
             opacity: 0.8;
+        }
+
+        /* Estilo de pestañas */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background-color: var(--tab-inactive);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:first-child {
+            border-top-left-radius: var(--border-radius);
+        }
+
+        .tab:last-child {
+            border-top-right-radius: var(--border-radius);
+        }
+
+        .tab.active {
+            background-color: var(--tab-active);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .form-group {
@@ -186,13 +231,118 @@
             opacity: 1;
         }
 
-         select {
+        select {
             appearance: none;
             padding-right: 30px;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-chevron-down'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 16px;
+        }
+
+        /* Estilos para la pestaña de análisis */
+        .chart-container {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-color);
+            min-height: 300px;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .info-card h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .info-card p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .info-card strong {
+            color: var(--secondary-color);
+            font-size: 1.2em;
+        }
+
+        .factor-slider-container {
+            margin: 40px 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .factor-slider {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .factor-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .factor-label {
+            width: 200px;
+            font-weight: 500;
+        }
+
+        .factor-range {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .factor-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .factor-range::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .factor-value {
+            width: 50px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .impact-chart {
+            height: 400px;
         }
 
         @media (max-width: 768px) {
@@ -204,6 +354,10 @@
             .container {
                 padding: 20px 15px;
             }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -211,206 +365,848 @@
     <div class="container">
         <header>
             <h1>Evaluación de Riesgo de Obesidad</h1>
-            <p class="subtitle">Complete el formulario para evaluar su riesgo de obesidad basado en sus hábitos y características personales.</p>
+            <p class="subtitle">Evalúe su riesgo de obesidad basado en hábitos y características personales</p>
         </header>
 
-        <form action="/predict" method="post">
-            <h2 class="section-title"><i class="fas fa-user"></i> Información Personal</h2>
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="Gender">Género:</label>
-                        <select id="Gender" name="Gender" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="Male">Masculino</option>
-                            <option value="Female">Femenino</option>
-                        </select>
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('form')">
+                <i class="fas fa-clipboard-list"></i> Formulario
+            </button>
+            <button class="tab" onclick="openTab('analysis')">
+                <i class="fas fa-chart-line"></i> Análisis de Factores
+            </button>
+            <button class="tab" onclick="openTab('relationships')">
+                <i class="fas fa-project-diagram"></i> Relaciones entre Variables
+            </button>
+        </div>
+
+        <div id="form" class="tab-content active">
+            <form action="/predict" method="post">
+                <h2 class="section-title"><i class="fas fa-user"></i> Información Personal</h2>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Gender">Género:</label>
+                            <select id="Gender" name="Gender" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="Male">Masculino</option>
+                                <option value="Female">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Age">Edad:</label>
+                            <input type="number" id="Age" name="Age" min="1" max="120" required placeholder="Años">
+                        </div>
                     </div>
                 </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="Age">Edad:</label>
-                        <input type="number" id="Age" name="Age" min="1" max="120" required placeholder="Años">
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Height">Altura:</label>
+                            <input type="number" step="0.01" id="Height" name="Height" min="0.5" max="2.5" required placeholder="Metros">
+                        </div>
                     </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Weight">Peso:</label>
+                            <input type="number" id="Weight" name="Weight" min="20" max="300" required placeholder="Kilogramos">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="family_history">
+                        Historial familiar de obesidad:
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltip-text">Indique si tiene familiares directos (padres, hermanos) con obesidad.</span>
+                        </span>
+                    </label>
+                    <select id="family_history" name="family_history" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <h2 class="section-title"><i class="fas fa-utensils"></i> Hábitos Alimenticios</h2>
+                <div class="form-group">
+                    <label for="FAVC">
+                        ¿Consume alimentos altos en calorías frecuentemente?
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltip-text">Comida rápida, dulces, alimentos fritos, etc.</span>
+                        </span>
+                    </label>
+                    <select id="FAVC" name="FAVC" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="FCVC">
+                                Frecuencia de consumo de vegetales:
+                                <span class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltip-text">Escala del 1 al 3 (1: nunca, 2: a veces, 3: siempre)</span>
+                                </span>
+                            </label>
+                            <select id="FCVC" name="FCVC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="1">1 - Nunca/Raramente</option>
+                                <option value="2">2 - A veces</option>
+                                <option value="3">3 - Siempre/Frecuentemente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="NCP">Número de comidas principales al día:</label>
+                            <select id="NCP" name="NCP" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="1">1 comida</option>
+                                <option value="2">2 comidas</option>
+                                <option value="3">3 comidas</option>
+                                <option value="4">4 o más comidas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="CAEC">Consumo de alimentos entre comidas:</label>
+                    <select id="CAEC" name="CAEC" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="no">No</option>
+                        <option value="Sometimes">A veces</option>
+                        <option value="Frequently">Frecuentemente</option>
+                        <option value="Always">Siempre</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="SMOKE">¿Fuma?</label>
+                            <select id="SMOKE" name="SMOKE" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="yes">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="CH2O">Consumo de agua diario:</label>
+                            <input type="number" step="0.1" id="CH2O" name="CH2O" min="0" max="10" required placeholder="Litros">
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-title"><i class="fas fa-running"></i> Estilo de Vida</h2>
+                <div class="form-group">
+                    <label for="SCC">
+                        ¿Se considera sedentario?
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltip-text">Poca actividad física diaria y mucho tiempo sentado.</span>
+                        </span>
+                    </label>
+                    <select id="SCC" name="SCC" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="FAF">Frecuencia de actividad física semanal:</label>
+                            <select id="FAF" name="FAF" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="0">0 - Ninguna</option>
+                                <option value="1">1 - 1 vez por semana</option>
+                                <option value="2">2 - 2 veces por semana</option>
+                                <option value="3">3 - 3 veces por semana</option>
+                                <option value="4">4 o más veces por semana</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="TUE">Horas de uso de tecnología al día:</label>
+                            <input type="number" id="TUE" name="TUE" min="0" max="24" required placeholder="Horas">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="CALC"> ¿Con qué frecuencia bebe alcohol?</label>
+                            <select id="CALC" name="CALC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="No">No</option>
+                                <option value="Rarely">Raramente</option>
+                                <option value="Sometimes">A veces</option>
+                                <option value="Frequently">Frecuentemente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="MTRANS">Modo de transporte habitual:</label>
+                            <select id="MTRANS" name="MTRANS" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="Walking">Caminando</option>
+                                <option value="Bike">Bicicleta</option>
+                                <option value="Public_Transportation">Transporte público</option>
+                                <option value="Automobile">Automóvil</option>
+                                <option value="Other">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Evaluar Riesgo</button>
+            </form>
+        </div>
+
+        <div id="analysis" class="tab-content">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> Análisis de Factores de Riesgo</h2>
+
+            <div class="cards-container">
+                <div class="info-card">
+                    <h3>Factor Más Influyente</h3>
+                    <p>Factores dietéticos inadecuados, como una alimentación alta en calorías y baja en nutrientes, pueden aumentar el riesgo de obesidad en un <strong>38%</strong>.</p>
+
+                </div>
+                <div class="info-card">
+                    <h3>Factor Más Controlable</h3>
+                    <p>Incrementar el consumo de vegetales de manera regular puede reducir el riesgo de obesidad en un <strong>20%</strong>.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Combinación Óptima</h3>
+                    <p>3+ días de ejercicio y consumo diario de agua <strong>2L+</strong></p>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="Height">Altura:</label>
-                        <input type="number" step="0.01" id="Height" name="Height" min="0.5" max="2.5" required placeholder="Metros">
-                    </div>
+            <div class="chart-container">
+                <h3>Impacto de Factores Controlables</h3>
+                <canvas id="factorImpactChart"></canvas>
+            </div>
+
+            <div class="factor-slider-container">
+                <h3>Simulador de Cambios en Factores de Riesgo</h3>
+                <p class="subtitle">Ajuste los factores para ver cómo cambia su riesgo de obesidad</p>
+
+                <div class="factor-row">
+                    <span class="factor-label">Actividad Física (días/semana)</span>
+                    <input type="range" min="0" max="7" value="2" class="factor-range" id="activitySlider">
+                    <span class="factor-value" id="activityValue">2</span>
                 </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="Weight">Peso:</label>
-                        <input type="number" id="Weight" name="Weight" min="20" max="300" required placeholder="Kilogramos">
-                    </div>
+
+                <div class="factor-row">
+                    <span class="factor-label">Consumo de Agua (L/día)</span>
+                    <input type="range" min="0" max="3" step="0.5" value="1" class="factor-range" id="waterSlider">
+                    <span class="factor-value" id="waterValue">1</span>
+                </div>
+
+                <div class="factor-row">
+                    <span class="factor-label">Consumo de Vegetales (freq.)</span>
+                    <input type="range" min="1" max="3" value="2" class="factor-range" id="veggiesSlider">
+                    <span class="factor-value" id="veggiesValue">2</span>
+                </div>
+
+                <div class="factor-row">
+                    <span class="factor-label">Horas Sedentarias (h/día)</span>
+                    <input type="range" min="0" max="16" value="8" class="factor-range" id="sedentarySlider">
+                    <span class="factor-value" id="sedentaryValue">8</span>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="family_history">
-                    Historial familiar de obesidad:
-                    <span class="tooltip">
-                        <span class="info-icon">i</span>
-                        <span class="tooltip-text">Indique si tiene familiares directos (padres, hermanos) con obesidad.</span>
-                    </span>
-                </label>
-                <select id="family_history" name="family_history" required>
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="yes">Sí</option>
-                    <option value="no">No</option>
-                </select>
+            <div class="chart-container">
+                <h3>Distribución de Riesgo por Factores</h3>
+                <canvas id="riskDistributionChart"></canvas>
             </div>
-
-            <h2 class="section-title"><i class="fas fa-utensils"></i> Hábitos Alimenticios</h2>
-            <div class="form-group">
-                <label for="FAVC">
-                    ¿Consume alimentos altos en calorías frecuentemente?
-                    <span class="tooltip">
-                        <span class="info-icon">i</span>
-                        <span class="tooltip-text">Comida rápida, dulces, alimentos fritos, etc.</span>
-                    </span>
-                </label>
-                <select id="FAVC" name="FAVC" required>
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="yes">Sí</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="FCVC">
-                            Frecuencia de consumo de vegetales:
-                            <span class="tooltip">
-                                <span class="info-icon">i</span>
-                                <span class="tooltip-text">Escala del 1 al 3 (1: nunca, 2: a veces, 3: siempre)</span>
-                            </span>
-                        </label>
-                        <select id="FCVC" name="FCVC" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="1">1 - Nunca/Raramente</option>
-                            <option value="2">2 - A veces</option>
-                            <option value="3">3 - Siempre/Frecuentemente</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="NCP">Número de comidas principales al día:</label>
-                        <select id="NCP" name="NCP" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="1">1 comida</option>
-                            <option value="2">2 comidas</option>
-                            <option value="3">3 comidas</option>
-                            <option value="4">4 o más comidas</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="CAEC">Consumo de alimentos entre comidas:</label>
-                <select id="CAEC" name="CAEC" required>
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="no">No</option>
-                    <option value="Sometimes">A veces</option>
-                    <option value="Frequently">Frecuentemente</option>
-                    <option value="Always">Siempre</option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="SMOKE">¿Fuma?</label>
-                        <select id="SMOKE" name="SMOKE" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="yes">Sí</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="CH2O">Consumo de agua diario:</label>
-                        <input type="number" step="0.1" id="CH2O" name="CH2O" min="0" max="10" required placeholder="Litros">
-                    </div>
-                </div>
-            </div>
-
-            <h2 class="section-title"><i class="fas fa-running"></i> Estilo de Vida</h2>
-            <div class="form-group">
-                <label for="SCC">
-                    ¿Se considera sedentario?
-                    <span class="tooltip">
-                        <span class="info-icon">i</span>
-                        <span class="tooltip-text">Poca actividad física diaria y mucho tiempo sentado.</span>
-                    </span>
-                </label>
-                <select id="SCC" name="SCC" required>
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="yes">Sí</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="FAF">Frecuencia de actividad física semanal:</label>
-                        <select id="FAF" name="FAF" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="0">0 - Ninguna</option>
-                            <option value="1">1 - 1 vez por semana</option>
-                            <option value="2">2 - 2 veces por semana</option>
-                            <option value="3">3 - 3 veces por semana</option>
-                            <option value="4">4 o más veces por semana</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="TUE">Horas de uso de tecnología al día:</label>
-                        <input type="number" id="TUE" name="TUE" min="0" max="24" required placeholder="Horas">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="CALC"> ¿Con qué frecuencia bebe alcohol?</label>
-                        <select id="CALC" name="CALC" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="No">No</option>
-                            <option value="Rarely">Raramente</option>
-                            <option value="Sometimes">A veces</option>
-                            <option value="Frequently">Frecuentemente</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="MTRANS">Modo de transporte habitual:</label>
-                        <select id="MTRANS" name="MTRANS" required>
-                            <option value="" disabled selected>Seleccione una opción</option>
-                            <option value="Walking">Caminando</option>
-                            <option value="Bike">Bicicleta</option>
-                            <option value="Public_Transportation">Transporte público</option>
-                            <option value="Automobile">Automóvil</option>
-                            <option value="Other">Otro</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-submit">Evaluar Riesgo</button>
-        </form>
+        </div>
     </div>
+    <!-- Contenido de la nueva pestaña -->
+    <div id="relationships" class="tab-content">
+        <h2 class="section-title"><i class="fas fa-project-diagram"></i> Relaciones entre Variables</h2>
+
+        <div class="cards-container">
+            <div class="info-card">
+                <h3>Correlación más Fuerte</h3>
+                <p>El <strong>sedentarismo</strong> y el <strong>consumo de alimentos altos en calorías</strong> muestran una correlación positiva de <strong>0.68</strong>.</p>
+            </div>
+            <div class="info-card">
+                <h3>Efecto Combinado</h3>
+                <p>La combinación de <strong>baja actividad física</strong> y <strong>alto uso de tecnología</strong> multiplica el riesgo por <strong>2.3x</strong>.</p>
+            </div>
+            <div class="info-card">
+                <h3>Factor Protector</h3>
+                <p>El <strong>consumo de agua</strong> reduce el impacto negativo del sedentarismo en un <strong>15%</strong>.</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Matriz de Correlaciones</h3>
+            <canvas id="correlationMatrix"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Análisis de Componentes Principales</h3>
+            <p class="subtitle">Visualización de agrupaciones de factores relacionados</p>
+            <canvas id="pcaChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Red de Interacciones entre Variables</h3>
+            <div id="networkGraph" style="height: 400px;"></div>
+        </div>
+
+        <div class="factor-slider-container">
+            <h3>Simulador de Interacciones</h3>
+            <p class="subtitle">Explore cómo el cambio en una variable afecta a otras</p>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="primaryFactor">Variable Principal:</label>
+                        <select id="primaryFactor" name="primaryFactor">
+                            <option value="physical_activity">Actividad Física</option>
+                            <option value="sedentary">Comportamiento Sedentario</option>
+                            <option value="water">Consumo de Agua</option>
+                            <option value="highcal">Alimentos Altos en Calorías</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="secondaryFactor">Variable Secundaria:</label>
+                        <select id="secondaryFactor" name="secondaryFactor">
+                            <option value="bmi">IMC</option>
+                            <option value="risk">Riesgo de Obesidad</option>
+                            <option value="health">Indicador de Salud</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="interactionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para cambiar entre pestañas
+        function openTab(tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Inicializar gráficos cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de impacto de factores
+            const ctxImpact = document.getElementById('factorImpactChart').getContext('2d');
+            const impactChart = new Chart(ctxImpact, {
+                type: 'bar',
+                data: {
+                    labels: ['Uso de Tecnología', 'Actividad Física', 'Consumo de Agua', 'Consumo de Vegetales', 'Nº comidas principales'],
+                    datasets: [{
+                        label: 'Impacto en Riesgo de Obesidad (%)',
+                        data: [13.7, 12.8, 12.4, 20.2, 13.5],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de distribución de riesgo
+            const ctxDistribution = document.getElementById('riskDistributionChart').getContext('2d');
+            const distributionChart = new Chart(ctxDistribution, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Factores Dietéticos', 'Estilo de Vida', 'Genética', "Factores de Consumo de Sustancias", "Otros"],
+                    datasets: [{
+                        data: [38.2, 21.3, 22.3 ,5.3,12.9],
+                        backgroundColor: [
+                            '#4e73df',
+                            '#1cc88a',
+                            '#36b9cc',
+                            '#f6c23e',
+                            '#e74a3b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Controladores de los sliders
+            document.getElementById('activitySlider').addEventListener('input', function() {
+                document.getElementById('activityValue').textContent = this.value;
+            });
+
+            document.getElementById('waterSlider').addEventListener('input', function() {
+                document.getElementById('waterValue').textContent = this.value;
+            });
+
+            document.getElementById('veggiesSlider').addEventListener('input', function() {
+                document.getElementById('veggiesValue').textContent = this.value;
+            });
+
+            document.getElementById('sedentarySlider').addEventListener('input', function() {
+                document.getElementById('sedentaryValue').textContent = this.value;
+            });
+
+
+            // Si la pestaña de relaciones está activa, inicializar sus gráficos
+            if (document.getElementById('relationships').classList.contains('active')) {
+                initRelationshipCharts();
+            }
+
+            // Modificar la función openTab para inicializar las gráficas cuando se abra la pestaña
+            const originalOpenTab = window.openTab;
+            window.openTab = function(tabName) {
+                originalOpenTab(tabName);
+                if (tabName === 'relationships') {
+                    initRelationshipCharts();
+                }
+            };
+
+            function initRelationshipCharts() {
+                // Matriz de correlación
+                const ctxCorrelation = document.getElementById('correlationMatrix').getContext('2d');
+                const correlationMatrix = new Chart(ctxCorrelation, {
+                    type: 'heatmap',
+                    data: {
+                        labels: ['Actividad Física', 'Sedentarismo', 'Comidas/día', 'Agua', 'Vegetales', 'Alim. Altos Cal.', 'IMC'],
+                        datasets: [{
+                            label: 'Correlación',
+                            data: [
+                                { x: 'Actividad Física', y: 'Actividad Física', v: 1 },
+                                { x: 'Actividad Física', y: 'Sedentarismo', v: -0.65 },
+                                { x: 'Actividad Física', y: 'Comidas/día', v: 0.35 },
+                                { x: 'Actividad Física', y: 'Agua', v: 0.48 },
+                                { x: 'Actividad Física', y: 'Vegetales', v: 0.42 },
+                                { x: 'Actividad Física', y: 'Alim. Altos Cal.', v: -0.52 },
+                                { x: 'Actividad Física', y: 'IMC', v: -0.58 },
+
+                                { x: 'Sedentarismo', y: 'Actividad Física', v: -0.65 },
+                                { x: 'Sedentarismo', y: 'Sedentarismo', v: 1 },
+                                { x: 'Sedentarismo', y: 'Comidas/día', v: -0.28 },
+                                { x: 'Sedentarismo', y: 'Agua', v: -0.42 },
+                                { x: 'Sedentarismo', y: 'Vegetales', v: -0.38 },
+                                { x: 'Sedentarismo', y: 'Alim. Altos Cal.', v: 0.68 },
+                                { x: 'Sedentarismo', y: 'IMC', v: 0.62 },
+
+                                { x: 'Comidas/día', y: 'Actividad Física', v: 0.35 },
+                                { x: 'Comidas/día', y: 'Sedentarismo', v: -0.28 },
+                                { x: 'Comidas/día', y: 'Comidas/día', v: 1 },
+                                { x: 'Comidas/día', y: 'Agua', v: 0.32 },
+                                { x: 'Comidas/día', y: 'Vegetales', v: 0.45 },
+                                { x: 'Comidas/día', y: 'Alim. Altos Cal.', v: -0.25 },
+                                { x: 'Comidas/día', y: 'IMC', v: -0.36 },
+
+                                { x: 'Agua', y: 'Actividad Física', v: 0.48 },
+                                { x: 'Agua', y: 'Sedentarismo', v: -0.42 },
+                                { x: 'Agua', y: 'Comidas/día', v: 0.32 },
+                                { x: 'Agua', y: 'Agua', v: 1 },
+                                { x: 'Agua', y: 'Vegetales', v: 0.52 },
+                                { x: 'Agua', y: 'Alim. Altos Cal.', v: -0.38 },
+                                { x: 'Agua', y: 'IMC', v: -0.45 },
+
+                                { x: 'Vegetales', y: 'Actividad Física', v: 0.42 },
+                                { x: 'Vegetales', y: 'Sedentarismo', v: -0.38 },
+                                { x: 'Vegetales', y: 'Comidas/día', v: 0.45 },
+                                { x: 'Vegetales', y: 'Agua', v: 0.52 },
+                                { x: 'Vegetales', y: 'Vegetales', v: 1 },
+                                { x: 'Vegetales', y: 'Alim. Altos Cal.', v: -0.56 },
+                                { x: 'Vegetales', y: 'IMC', v: -0.54 },
+
+                                { x: 'Alim. Altos Cal.', y: 'Actividad Física', v: -0.52 },
+                                { x: 'Alim. Altos Cal.', y: 'Sedentarismo', v: 0.68 },
+                                { x: 'Alim. Altos Cal.', y: 'Comidas/día', v: -0.25 },
+                                { x: 'Alim. Altos Cal.', y: 'Agua', v: -0.38 },
+                                { x: 'Alim. Altos Cal.', y: 'Vegetales', v: -0.56 },
+                                { x: 'Alim. Altos Cal.', y: 'Alim. Altos Cal.', v: 1 },
+                                { x: 'Alim. Altos Cal.', y: 'IMC', v: 0.72 },
+
+                                { x: 'IMC', y: 'Actividad Física', v: -0.58 },
+                                { x: 'IMC', y: 'Sedentarismo', v: 0.62 },
+                                { x: 'IMC', y: 'Comidas/día', v: -0.36 },
+                                { x: 'IMC', y: 'Agua', v: -0.45 },
+                                { x: 'IMC', y: 'Vegetales', v: -0.54 },
+                                { x: 'IMC', y: 'Alim. Altos Cal.', v: 0.72 },
+                                { x: 'IMC', y: 'IMC', v: 1 }
+                            ],
+                            backgroundColor({raw}) {
+                                const value = raw.v;
+                                const alpha = Math.abs(value);
+                                return value > 0
+                                    ? `rgba(28, 200, 138, ${alpha})`
+                                    : value < 0
+                                        ? `rgba(231, 74, 59, ${alpha})`
+                                        : 'rgba(100, 100, 100, 0.2)';
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Correlación: ${context.raw.v.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // PCA Chart (Scatterplot)
+                const ctxPCA = document.getElementById('pcaChart').getContext('2d');
+                const pcaChart = new Chart(ctxPCA, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Factores Dietéticos',
+                                data: [
+                                    { x: 0.85, y: 0.3 },  // Alimentos altos en calorías
+                                    { x: -0.62, y: 0.48 }, // Consumo de vegetales
+                                    { x: -0.58, y: 0.42 }, // Agua
+                                    { x: -0.45, y: 0.38 }  // Número de comidas
+                                ],
+                                backgroundColor: 'rgba(78, 115, 223, 0.7)',
+                                pointRadius: 10,
+                                pointHoverRadius: 12
+                            },
+                            {
+                                label: 'Actividad Física',
+                                data: [
+                                    { x: -0.72, y: -0.35 }, // Actividad física
+                                    { x: 0.78, y: -0.25 },  // Sedentarismo
+                                    { x: 0.65, y: -0.15 }   // Uso de tecnología
+                                ],
+                                backgroundColor: 'rgba(28, 200, 138, 0.7)',
+                                pointRadius: 10,
+                                pointHoverRadius: 12
+                            },
+                            {
+                                label: 'Factores Genéticos',
+                                data: [
+                                    { x: 0.15, y: 0.85 },  // Historia familiar
+                                    { x: 0.05, y: 0.78 }   // Predisposición
+                                ],
+                                backgroundColor: 'rgba(246, 194, 62, 0.7)',
+                                pointRadius: 10,
+                                pointHoverRadius: 12
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: '#e0e0e0',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const labels = [
+                                            'Alimentos altos en calorías', 'Consumo de vegetales', 'Agua', 'Número de comidas',
+                                            'Actividad física', 'Sedentarismo', 'Uso de tecnología',
+                                            'Historia familiar', 'Predisposición'
+                                        ];
+                                        const datasetIndex = context.datasetIndex;
+                                        const dataIndex = context.dataIndex;
+                                        let offset = 0;
+                                        if (datasetIndex === 1) offset = 4;
+                                        if (datasetIndex === 2) offset = 7;
+
+                                        return labels[offset + dataIndex];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Componente Principal 1',
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#e0e0e0'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Componente Principal 2',
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#e0e0e0'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Simulador de interacciones
+                const ctxInteraction = document.getElementById('interactionChart').getContext('2d');
+                const interactionChart = new Chart(ctxInteraction, {
+                    type: 'line',
+                    data: {
+                        labels: ['Muy bajo', 'Bajo', 'Moderado', 'Alto', 'Muy alto'],
+                        datasets: [
+                            {
+                                label: 'IMC',
+                                data: [32.5, 30.2, 27.8, 24.6, 22.1],
+                                borderColor: '#4e73df',
+                                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Riesgo de Obesidad (%)',
+                                data: [78, 65, 45, 32, 18],
+                                borderColor: '#e74a3b',
+                                backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                hidden: true
+                            },
+                            {
+                                label: 'Indicador de Salud',
+                                data: [42, 55, 68, 78, 85],
+                                borderColor: '#1cc88a',
+                                backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                hidden: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Efecto de la Actividad Física',
+                                color: '#e0e0e0',
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#e0e0e0'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Nivel de Actividad Física',
+                                    color: '#e0e0e0'
+                                },
+                                ticks: {
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Manejar cambios en las variables del simulador
+                document.getElementById('primaryFactor').addEventListener('change', updateInteractionChart);
+                document.getElementById('secondaryFactor').addEventListener('change', updateInteractionChart);
+
+                function updateInteractionChart() {
+                    const primaryFactor = document.getElementById('primaryFactor').value;
+                    const secondaryFactor = document.getElementById('secondaryFactor').value;
+
+                    // Mostrar solo el dataset seleccionado
+                    interactionChart.data.datasets.forEach((dataset, index) => {
+                        if (index === 0 && secondaryFactor === 'bmi') {
+                            dataset.hidden = false;
+                        } else if (index === 1 && secondaryFactor === 'risk') {
+                            dataset.hidden = false;
+                        } else if (index === 2 && secondaryFactor === 'health') {
+                            dataset.hidden = false;
+                        } else {
+                            dataset.hidden = true;
+                        }
+                    });
+
+                    // Actualizar título según la variable principal
+                    let title = '';
+                    switch(primaryFactor) {
+                        case 'physical_activity':
+                            title = 'Efecto de la Actividad Física';
+                            interactionChart.data.labels = ['Muy bajo', 'Bajo', 'Moderado', 'Alto', 'Muy alto'];
+                            break;
+                        case 'sedentary':
+                            title = 'Efecto del Comportamiento Sedentario';
+                            interactionChart.data.labels = ['Mínimo', 'Bajo', 'Moderado', 'Alto', 'Excesivo'];
+                            // Invertir datos para sedentarismo (más es peor)
+                            interactionChart.data.datasets[0].data = [22.1, 24.6, 27.8, 30.2, 32.5];
+                            interactionChart.data.datasets[1].data = [18, 32, 45, 65, 78];
+                            interactionChart.data.datasets[2].data = [85, 78, 68, 55, 42];
+                            break;
+                        case 'water':
+                            title = 'Efecto del Consumo de Agua';
+                            interactionChart.data.labels = ['<0.5L', '0.5-1L', '1-1.5L', '1.5-2L', '>2L'];
+                            interactionChart.data.datasets[0].data = [31.8, 29.5, 26.2, 24.4, 22.8];
+                            interactionChart.data.datasets[1].data = [72, 62, 48, 35, 25];
+                            interactionChart.data.datasets[2].data = [45, 58, 67, 75, 82];
+                            break;
+                        case 'highcal':
+                            title = 'Efecto del Consumo de Alimentos Altos en Calorías';
+                            interactionChart.data.labels = ['Nunca', 'Rara vez', 'A veces', 'Frecuente', 'Muy frecuente'];
+                            interactionChart.data.datasets[0].data = [22.5, 25.2, 28.4, 31.6, 34.2];
+                            interactionChart.data.datasets[1].data = [20, 35, 52, 68, 82];
+                            interactionChart.data.datasets[2].data = [88, 75, 65, 48, 35];
+                            break;
+                    }
+
+                    interactionChart.options.plugins.title.text = title;
+                    interactionChart.options.scales.x.title.text = 'Nivel de ' + document.getElementById('primaryFactor').options[document.getElementById('primaryFactor').selectedIndex].text;
+
+                    interactionChart.update();
+                }
+
+                // Añadir gráfico de red con D3.js
+                // Nota: Este código requeriría tener d3.js importado
+                // Se puede dibujar una red simple con SVG o un canvas
+                const networkGraph = document.getElementById('networkGraph');
+                // Aquí se añadiría el código para crear la visualización de red
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,22 +1,21 @@
 import os
 import datetime
-from cargar_datos import cargar_datos
-from analisis_importancia import analizar_importancia
-from clasificacion import entrenar_modelo, predecir
+
+from neo4j import GraphDatabase
+from tensorboard import summary
+
+from cargar_datos.cargar_datos_mongodb import cargar_datos
+from analisis_variables.analisis_importancia_clasificacion import analizar_importancia
+from correlaciones.analisis_relaciones import analisis_completo_neo4j
+from entrenamiento_modelo.clasificacion import entrenar_modelo, predecir
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from analisis_factores_obesidad import analizar_factores_obesidad
+from analisis_variables.analisis_factores import analizar_factores_obesidad
 
 def main():
-    """
-    Función principal que ejecuta todo el flujo de trabajo:
-    1. Carga de datos desde MongoDB
-    2. Análisis de importancia de variables
-    3. Entrenamiento del modelo de clasificación
-    4. Guardar resultados
-    """
+
     print("=" * 80)
     print("ANÁLISIS DE DATASET DE OBESIDAD")
     print("=" * 80)
@@ -34,21 +33,11 @@ def main():
     # 2. Análisis de importancia
     print("\n2. ANALIZANDO IMPORTANCIA DE VARIABLES...")
     try:
-        importancias = analizar_importancia(X, y)
-        print(f"✓ Análisis de importancia completado")
-
-        # Guardar importancias
-
-        # Guardar gráfico de importancias
-        plt.figure(figsize=(10, 6))
-        sns.barplot(x=importancias.Importancia, y=importancias.index, palette="viridis")
-        plt.xlabel("Importancia Normalizada")
-        plt.ylabel("Características")
-        plt.title("Importancia de las Características en el Modelo")
-
+        analizar_importancia(X, y)
     except Exception as e:
         print(f"✗ Error en análisis de importancia: {str(e)}")
 
+    """
     # 3. Entrenamiento del modelo
     print("\n3. ENTRENANDO MODELO DE CLASIFICACIÓN...")
     try:
@@ -73,6 +62,8 @@ def main():
 
     print("\n" + "=" * 80)
     print("=" * 80)
+    """
+
 
     # 4. Análisis de factores de obesidad
     print("\n4. ANALIZANDO FACTORES DE OBESIDAD...")
@@ -94,24 +85,6 @@ def main():
         print("\nFactores no modificables más importantes:")
         print(factores_no_modificables.head())
 
-        """
-        # Resumen de hallazgos
-        print("\n5. RESUMEN DE HALLAZGOS...")
-        # Calcular importancia total
-        imp_total_modificables = factores_modificables["Importancia"].sum() * 100
-        imp_total_no_modificables = factores_no_modificables["Importancia"].sum() * 100
-        
-        print("\nTOP 3 FACTORES CONTROLABLES MÁS IMPORTANTES:")
-        for i, (factor, importancia) in enumerate(factores_modificables.head(3).items(), 1):
-            print(f"{i}. {factor}: {importancia * 100:.2f}%")
-
-        # Top 3 factores no modificables
-        print("\nTOP 3 FACTORES NO CONTROLABLES MÁS IMPORTANTES:")
-        for i, (factor, importancia) in enumerate(factores_no_modificables.head(3).items(), 1):
-            print(f"{i}. {factor}: {importancia * 100:.2f}%")
-        
-        print(f"✓ Resumen de hallazgos completado")
-        """
     except Exception as e:
         print(f"✗ Error en análisis de factores de obesidad: {str(e)}")
         return
@@ -121,7 +94,16 @@ def main():
     print("=" * 80)
 
 
+    print("5. Iniciando análisis de relaciones entre variables...")
+
+    URI = "bolt://localhost:7687"
+    USER = "neo4j"
+    PASSWORD = "ObesityDataSet"
+    driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+
+    correlaciones = analisis_completo_neo4j()
+
+    driver.close()
+
 if __name__ == "__main__":
     main()
-
-
