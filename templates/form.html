@@ -6,6 +6,7 @@
     <title>Evaluación de Riesgo de Obesidad</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         :root {
             --primary-color: #4e73df;
@@ -284,67 +285,6 @@
             font-size: 1.2em;
         }
 
-        .factor-slider-container {
-            margin: 40px 0;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            border-left: 4px solid var(--secondary-color);
-        }
-
-        .factor-slider {
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .factor-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .factor-label {
-            width: 200px;
-            font-weight: 500;
-        }
-
-        .factor-range {
-            flex: 1;
-            height: 8px;
-            border-radius: 4px;
-            background-color: var(--input-bg);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .factor-range::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            cursor: pointer;
-        }
-
-        .factor-range::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            cursor: pointer;
-        }
-
-        .factor-value {
-            width: 50px;
-            text-align: right;
-            font-weight: 600;
-            color: var(--secondary-color);
-        }
-
-        .impact-chart {
-            height: 400px;
-        }
-
         @media (max-width: 768px) {
             .form-col {
                 flex: 100%;
@@ -375,8 +315,8 @@
             <button class="tab" onclick="openTab('analysis')">
                 <i class="fas fa-chart-line"></i> Análisis de Factores
             </button>
-            <button class="tab" onclick="openTab('relationships')">
-                <i class="fas fa-project-diagram"></i> Relaciones entre Variables
+            <button class="tab" onclick="openTab('relations')">
+                <i class="fas fa-project-diagram"></i> Análisis de Relaciones
             </button>
         </div>
 
@@ -422,7 +362,7 @@
                         Historial familiar de obesidad:
                         <span class="tooltip">
                             <span class="info-icon">i</span>
-                            <span class="tooltip-text">Indique si tiene familiares directos (padres, hermanos) con obesidad.</span>
+                            <span class="tooltip-text">Indique si tiene familiasres directos (padres, hermanos) con obesidad.</span>
                         </span>
                     </label>
                     <select id="family_history" name="family_history" required>
@@ -604,34 +544,7 @@
                 <canvas id="factorImpactChart"></canvas>
             </div>
 
-            <div class="factor-slider-container">
-                <h3>Simulador de Cambios en Factores de Riesgo</h3>
-                <p class="subtitle">Ajuste los factores para ver cómo cambia su riesgo de obesidad</p>
 
-                <div class="factor-row">
-                    <span class="factor-label">Actividad Física (días/semana)</span>
-                    <input type="range" min="0" max="7" value="2" class="factor-range" id="activitySlider">
-                    <span class="factor-value" id="activityValue">2</span>
-                </div>
-
-                <div class="factor-row">
-                    <span class="factor-label">Consumo de Agua (L/día)</span>
-                    <input type="range" min="0" max="3" step="0.5" value="1" class="factor-range" id="waterSlider">
-                    <span class="factor-value" id="waterValue">1</span>
-                </div>
-
-                <div class="factor-row">
-                    <span class="factor-label">Consumo de Vegetales (freq.)</span>
-                    <input type="range" min="1" max="3" value="2" class="factor-range" id="veggiesSlider">
-                    <span class="factor-value" id="veggiesValue">2</span>
-                </div>
-
-                <div class="factor-row">
-                    <span class="factor-label">Horas Sedentarias (h/día)</span>
-                    <input type="range" min="0" max="16" value="8" class="factor-range" id="sedentarySlider">
-                    <span class="factor-value" id="sedentaryValue">8</span>
-                </div>
-            </div>
 
             <div class="chart-container">
                 <h3>Distribución de Riesgo por Factores</h3>
@@ -639,73 +552,59 @@
             </div>
         </div>
     </div>
-    <!-- Contenido de la nueva pestaña -->
-    <div id="relationships" class="tab-content">
-        <h2 class="section-title"><i class="fas fa-project-diagram"></i> Relaciones entre Variables</h2>
-
+    <div id="relations" class="tab-content">
+        <h2 class="section-title"><i class="fas fa-project-diagram"></i> Grafo de Relaciones entre Variables</h2>
+             <!-- Nuevas tarjetas de correlaciones -->
         <div class="cards-container">
             <div class="info-card">
-                <h3>Correlación más Fuerte</h3>
-                <p>El <strong>sedentarismo</strong> y el <strong>consumo de alimentos altos en calorías</strong> muestran una correlación positiva de <strong>0.68</strong>.</p>
+                <h3>Correlaciones Más Fuertes</h3>
+                <p>Las relaciones con mayor impacto en el estudio son:</p>
+                <ul>
+                    <li><strong>IMC → Nivel de Obesidad</strong>: Relación Chi² con intensidad de 0.97, siendo el principal determinante del nivel de obesidad.</li>
+                    <li><strong>Peso → IMC</strong>: Correlación positiva con intensidad de 0.93, mostrando cómo el peso influye directamente en el IMC.</li>
+                    <li><strong>Nivel de Obesidad → Peso</strong>: Relación ANOVA con intensidad de 0.85, evidenciando la relación bidireccional entre estas variables.</li>
+                </ul>
             </div>
-            <div class="info-card">
-                <h3>Efecto Combinado</h3>
-                <p>La combinación de <strong>baja actividad física</strong> y <strong>alto uso de tecnología</strong> multiplica el riesgo por <strong>2.3x</strong>.</p>
-            </div>
-            <div class="info-card">
-                <h3>Factor Protector</h3>
-                <p>El <strong>consumo de agua</strong> reduce el impacto negativo del sedentarismo en un <strong>15%</strong>.</p>
-            </div>
-        </div>
 
-        <div class="chart-container">
-            <h3>Matriz de Correlaciones</h3>
-            <canvas id="correlationMatrix"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h3>Análisis de Componentes Principales</h3>
-            <p class="subtitle">Visualización de agrupaciones de factores relacionados</p>
-            <canvas id="pcaChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h3>Red de Interacciones entre Variables</h3>
-            <div id="networkGraph" style="height: 400px;"></div>
-        </div>
-
-        <div class="factor-slider-container">
-            <h3>Simulador de Interacciones</h3>
-            <p class="subtitle">Explore cómo el cambio en una variable afecta a otras</p>
-
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="primaryFactor">Variable Principal:</label>
-                        <select id="primaryFactor" name="primaryFactor">
-                            <option value="physical_activity">Actividad Física</option>
-                            <option value="sedentary">Comportamiento Sedentario</option>
-                            <option value="water">Consumo de Agua</option>
-                            <option value="highcal">Alimentos Altos en Calorías</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="secondaryFactor">Variable Secundaria:</label>
-                        <select id="secondaryFactor" name="secondaryFactor">
-                            <option value="bmi">IMC</option>
-                            <option value="risk">Riesgo de Obesidad</option>
-                            <option value="health">Indicador de Salud</option>
-                        </select>
-                    </div>
+            <div class="cards-container">
+                <div class="info-card">
+                    <h3>Relaciones Claves en el Estilo de Vida</h3>
+                    <p>Algunos hábitos tienen correlaciones significativas que pueden impactar la salud:</p>
+                    <ul>
+                        <li><strong>Consumo de Agua → Frecuencia de Actividad Física</strong>: Correlación positiva (0.16, Pearson). Indica que quienes realizan más actividad física tienden a consumir más agua, lo que resalta la importancia de la hidratación en la rutina deportiva.</li>
+                        <li><strong>Frecuencia de Consumo de Verduras → Número de Comidas Principales</strong>: Correlación positiva (0.04, Pearson). Sugiere que las personas que consumen más verduras suelen tener una mayor estructura en sus comidas diarias.</li>
+                        <li><strong>Fumar → Consumo de Alcohol</strong>: Relación Chi² con intensidad de 0.11. Muestra que quienes fuman tienen una mayor probabilidad de consumir alcohol con más frecuencia.</li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <canvas id="interactionChart"></canvas>
+            <div class="info-card">
+                <h3>Variables Determinantes por Género</h3>
+                <p>El género muestra influencias importantes:</p>
+                <ul>
+                    <li><strong>Nivel de Obesidad → Género</strong>: Relación Chi² con intensidad de 0.56, mostrando diferencias significativas en obesidad por género.</li>
+                    <li><strong>Género → Altura</strong>: Relación ANOVA que confirma diferencias antropométricas naturales.</li>
+                    <li>El género parece influir en varios factores de estilo de vida que indirectamente afectan el nivel de obesidad.</li>
+                </ul>
             </div>
         </div>
+        <div class="info-card">
+            <h3>Interpretación del Grafo</h3>
+            <p>Este grafo muestra las relaciones estadísticamente significativas entre diferentes variables. Las líneas indican el tipo de relación:</p>
+            <ul>
+                <li><span style="color: #4CAF50;">Verde</span>: Correlación positiva: una variable aumenta, cuando la otra aumenta.</li>
+                <li><span style="color: #F44336;">Rojo</span>: Correlación negativa: una variable aumenta, cuando la otra disminuye.</li>
+                <li><span style="color: #FF9800;">Naranja</span>: Relación ANOVA: Se usa para comparar si una variable categórica afecta a una variable numérica.</li>
+                <li><span style="color: #9C27B0;">Morado</span>: Relación Chi²: Se usa para ver si dos variables categóricas están relacionadas.</li>
+            </ul>
+            <p>Los nodos azules representan variables numéricas, mientras que los verdes son variables categóricas.</p>
+        </div>
+
+        <div class="chart-container">
+            <div id="grafoRelaciones" style="width:100%; height:600px;"></div>
+        </div>
+    </div>
+
     </div>
 
     <script>
@@ -791,7 +690,7 @@
                 data: {
                     labels: ['Factores Dietéticos', 'Estilo de Vida', 'Genética', "Factores de Consumo de Sustancias", "Otros"],
                     datasets: [{
-                        data: [38.2, 21.3, 22.3 ,5.3,12.9],
+                        data: [38.2, 21.3, 22.3, 5.3, 12.9],
                         backgroundColor: [
                             '#4e73df',
                             '#1cc88a',
@@ -814,399 +713,265 @@
                     }
                 }
             });
-
-            // Controladores de los sliders
-            document.getElementById('activitySlider').addEventListener('input', function() {
-                document.getElementById('activityValue').textContent = this.value;
-            });
-
-            document.getElementById('waterSlider').addEventListener('input', function() {
-                document.getElementById('waterValue').textContent = this.value;
-            });
-
-            document.getElementById('veggiesSlider').addEventListener('input', function() {
-                document.getElementById('veggiesValue').textContent = this.value;
-            });
-
-            document.getElementById('sedentarySlider').addEventListener('input', function() {
-                document.getElementById('sedentaryValue').textContent = this.value;
-            });
-
-
-            // Si la pestaña de relaciones está activa, inicializar sus gráficos
-            if (document.getElementById('relationships').classList.contains('active')) {
-                initRelationshipCharts();
-            }
-
-            // Modificar la función openTab para inicializar las gráficas cuando se abra la pestaña
-            const originalOpenTab = window.openTab;
-            window.openTab = function(tabName) {
-                originalOpenTab(tabName);
-                if (tabName === 'relationships') {
-                    initRelationshipCharts();
-                }
-            };
-
-            function initRelationshipCharts() {
-                // Matriz de correlación
-                const ctxCorrelation = document.getElementById('correlationMatrix').getContext('2d');
-                const correlationMatrix = new Chart(ctxCorrelation, {
-                    type: 'heatmap',
-                    data: {
-                        labels: ['Actividad Física', 'Sedentarismo', 'Comidas/día', 'Agua', 'Vegetales', 'Alim. Altos Cal.', 'IMC'],
-                        datasets: [{
-                            label: 'Correlación',
-                            data: [
-                                { x: 'Actividad Física', y: 'Actividad Física', v: 1 },
-                                { x: 'Actividad Física', y: 'Sedentarismo', v: -0.65 },
-                                { x: 'Actividad Física', y: 'Comidas/día', v: 0.35 },
-                                { x: 'Actividad Física', y: 'Agua', v: 0.48 },
-                                { x: 'Actividad Física', y: 'Vegetales', v: 0.42 },
-                                { x: 'Actividad Física', y: 'Alim. Altos Cal.', v: -0.52 },
-                                { x: 'Actividad Física', y: 'IMC', v: -0.58 },
-
-                                { x: 'Sedentarismo', y: 'Actividad Física', v: -0.65 },
-                                { x: 'Sedentarismo', y: 'Sedentarismo', v: 1 },
-                                { x: 'Sedentarismo', y: 'Comidas/día', v: -0.28 },
-                                { x: 'Sedentarismo', y: 'Agua', v: -0.42 },
-                                { x: 'Sedentarismo', y: 'Vegetales', v: -0.38 },
-                                { x: 'Sedentarismo', y: 'Alim. Altos Cal.', v: 0.68 },
-                                { x: 'Sedentarismo', y: 'IMC', v: 0.62 },
-
-                                { x: 'Comidas/día', y: 'Actividad Física', v: 0.35 },
-                                { x: 'Comidas/día', y: 'Sedentarismo', v: -0.28 },
-                                { x: 'Comidas/día', y: 'Comidas/día', v: 1 },
-                                { x: 'Comidas/día', y: 'Agua', v: 0.32 },
-                                { x: 'Comidas/día', y: 'Vegetales', v: 0.45 },
-                                { x: 'Comidas/día', y: 'Alim. Altos Cal.', v: -0.25 },
-                                { x: 'Comidas/día', y: 'IMC', v: -0.36 },
-
-                                { x: 'Agua', y: 'Actividad Física', v: 0.48 },
-                                { x: 'Agua', y: 'Sedentarismo', v: -0.42 },
-                                { x: 'Agua', y: 'Comidas/día', v: 0.32 },
-                                { x: 'Agua', y: 'Agua', v: 1 },
-                                { x: 'Agua', y: 'Vegetales', v: 0.52 },
-                                { x: 'Agua', y: 'Alim. Altos Cal.', v: -0.38 },
-                                { x: 'Agua', y: 'IMC', v: -0.45 },
-
-                                { x: 'Vegetales', y: 'Actividad Física', v: 0.42 },
-                                { x: 'Vegetales', y: 'Sedentarismo', v: -0.38 },
-                                { x: 'Vegetales', y: 'Comidas/día', v: 0.45 },
-                                { x: 'Vegetales', y: 'Agua', v: 0.52 },
-                                { x: 'Vegetales', y: 'Vegetales', v: 1 },
-                                { x: 'Vegetales', y: 'Alim. Altos Cal.', v: -0.56 },
-                                { x: 'Vegetales', y: 'IMC', v: -0.54 },
-
-                                { x: 'Alim. Altos Cal.', y: 'Actividad Física', v: -0.52 },
-                                { x: 'Alim. Altos Cal.', y: 'Sedentarismo', v: 0.68 },
-                                { x: 'Alim. Altos Cal.', y: 'Comidas/día', v: -0.25 },
-                                { x: 'Alim. Altos Cal.', y: 'Agua', v: -0.38 },
-                                { x: 'Alim. Altos Cal.', y: 'Vegetales', v: -0.56 },
-                                { x: 'Alim. Altos Cal.', y: 'Alim. Altos Cal.', v: 1 },
-                                { x: 'Alim. Altos Cal.', y: 'IMC', v: 0.72 },
-
-                                { x: 'IMC', y: 'Actividad Física', v: -0.58 },
-                                { x: 'IMC', y: 'Sedentarismo', v: 0.62 },
-                                { x: 'IMC', y: 'Comidas/día', v: -0.36 },
-                                { x: 'IMC', y: 'Agua', v: -0.45 },
-                                { x: 'IMC', y: 'Vegetales', v: -0.54 },
-                                { x: 'IMC', y: 'Alim. Altos Cal.', v: 0.72 },
-                                { x: 'IMC', y: 'IMC', v: 1 }
-                            ],
-                            backgroundColor({raw}) {
-                                const value = raw.v;
-                                const alpha = Math.abs(value);
-                                return value > 0
-                                    ? `rgba(28, 200, 138, ${alpha})`
-                                    : value < 0
-                                        ? `rgba(231, 74, 59, ${alpha})`
-                                        : 'rgba(100, 100, 100, 0.2)';
-                            }
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Correlación: ${context.raw.v.toFixed(2)}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: {
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // PCA Chart (Scatterplot)
-                const ctxPCA = document.getElementById('pcaChart').getContext('2d');
-                const pcaChart = new Chart(ctxPCA, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [
-                            {
-                                label: 'Factores Dietéticos',
-                                data: [
-                                    { x: 0.85, y: 0.3 },  // Alimentos altos en calorías
-                                    { x: -0.62, y: 0.48 }, // Consumo de vegetales
-                                    { x: -0.58, y: 0.42 }, // Agua
-                                    { x: -0.45, y: 0.38 }  // Número de comidas
-                                ],
-                                backgroundColor: 'rgba(78, 115, 223, 0.7)',
-                                pointRadius: 10,
-                                pointHoverRadius: 12
-                            },
-                            {
-                                label: 'Actividad Física',
-                                data: [
-                                    { x: -0.72, y: -0.35 }, // Actividad física
-                                    { x: 0.78, y: -0.25 },  // Sedentarismo
-                                    { x: 0.65, y: -0.15 }   // Uso de tecnología
-                                ],
-                                backgroundColor: 'rgba(28, 200, 138, 0.7)',
-                                pointRadius: 10,
-                                pointHoverRadius: 12
-                            },
-                            {
-                                label: 'Factores Genéticos',
-                                data: [
-                                    { x: 0.15, y: 0.85 },  // Historia familiar
-                                    { x: 0.05, y: 0.78 }   // Predisposición
-                                ],
-                                backgroundColor: 'rgba(246, 194, 62, 0.7)',
-                                pointRadius: 10,
-                                pointHoverRadius: 12
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    color: '#e0e0e0',
-                                    font: {
-                                        size: 14
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const labels = [
-                                            'Alimentos altos en calorías', 'Consumo de vegetales', 'Agua', 'Número de comidas',
-                                            'Actividad física', 'Sedentarismo', 'Uso de tecnología',
-                                            'Historia familiar', 'Predisposición'
-                                        ];
-                                        const datasetIndex = context.datasetIndex;
-                                        const dataIndex = context.dataIndex;
-                                        let offset = 0;
-                                        if (datasetIndex === 1) offset = 4;
-                                        if (datasetIndex === 2) offset = 7;
-
-                                        return labels[offset + dataIndex];
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Componente Principal 1',
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                },
-                                ticks: {
-                                    color: '#e0e0e0'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Componente Principal 2',
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                },
-                                ticks: {
-                                    color: '#e0e0e0'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Simulador de interacciones
-                const ctxInteraction = document.getElementById('interactionChart').getContext('2d');
-                const interactionChart = new Chart(ctxInteraction, {
-                    type: 'line',
-                    data: {
-                        labels: ['Muy bajo', 'Bajo', 'Moderado', 'Alto', 'Muy alto'],
-                        datasets: [
-                            {
-                                label: 'IMC',
-                                data: [32.5, 30.2, 27.8, 24.6, 22.1],
-                                borderColor: '#4e73df',
-                                backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            },
-                            {
-                                label: 'Riesgo de Obesidad (%)',
-                                data: [78, 65, 45, 32, 18],
-                                borderColor: '#e74a3b',
-                                backgroundColor: 'rgba(231, 74, 59, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                                hidden: true
-                            },
-                            {
-                                label: 'Indicador de Salud',
-                                data: [42, 55, 68, 78, 85],
-                                borderColor: '#1cc88a',
-                                backgroundColor: 'rgba(28, 200, 138, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                                hidden: true
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Efecto de la Actividad Física',
-                                color: '#e0e0e0',
-                                font: {
-                                    size: 16
-                                }
-                            },
-                            legend: {
-                                labels: {
-                                    color: '#e0e0e0'
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Nivel de Actividad Física',
-                                    color: '#e0e0e0'
-                                },
-                                ticks: {
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Manejar cambios en las variables del simulador
-                document.getElementById('primaryFactor').addEventListener('change', updateInteractionChart);
-                document.getElementById('secondaryFactor').addEventListener('change', updateInteractionChart);
-
-                function updateInteractionChart() {
-                    const primaryFactor = document.getElementById('primaryFactor').value;
-                    const secondaryFactor = document.getElementById('secondaryFactor').value;
-
-                    // Mostrar solo el dataset seleccionado
-                    interactionChart.data.datasets.forEach((dataset, index) => {
-                        if (index === 0 && secondaryFactor === 'bmi') {
-                            dataset.hidden = false;
-                        } else if (index === 1 && secondaryFactor === 'risk') {
-                            dataset.hidden = false;
-                        } else if (index === 2 && secondaryFactor === 'health') {
-                            dataset.hidden = false;
-                        } else {
-                            dataset.hidden = true;
-                        }
-                    });
-
-                    // Actualizar título según la variable principal
-                    let title = '';
-                    switch(primaryFactor) {
-                        case 'physical_activity':
-                            title = 'Efecto de la Actividad Física';
-                            interactionChart.data.labels = ['Muy bajo', 'Bajo', 'Moderado', 'Alto', 'Muy alto'];
-                            break;
-                        case 'sedentary':
-                            title = 'Efecto del Comportamiento Sedentario';
-                            interactionChart.data.labels = ['Mínimo', 'Bajo', 'Moderado', 'Alto', 'Excesivo'];
-                            // Invertir datos para sedentarismo (más es peor)
-                            interactionChart.data.datasets[0].data = [22.1, 24.6, 27.8, 30.2, 32.5];
-                            interactionChart.data.datasets[1].data = [18, 32, 45, 65, 78];
-                            interactionChart.data.datasets[2].data = [85, 78, 68, 55, 42];
-                            break;
-                        case 'water':
-                            title = 'Efecto del Consumo de Agua';
-                            interactionChart.data.labels = ['<0.5L', '0.5-1L', '1-1.5L', '1.5-2L', '>2L'];
-                            interactionChart.data.datasets[0].data = [31.8, 29.5, 26.2, 24.4, 22.8];
-                            interactionChart.data.datasets[1].data = [72, 62, 48, 35, 25];
-                            interactionChart.data.datasets[2].data = [45, 58, 67, 75, 82];
-                            break;
-                        case 'highcal':
-                            title = 'Efecto del Consumo de Alimentos Altos en Calorías';
-                            interactionChart.data.labels = ['Nunca', 'Rara vez', 'A veces', 'Frecuente', 'Muy frecuente'];
-                            interactionChart.data.datasets[0].data = [22.5, 25.2, 28.4, 31.6, 34.2];
-                            interactionChart.data.datasets[1].data = [20, 35, 52, 68, 82];
-                            interactionChart.data.datasets[2].data = [88, 75, 65, 48, 35];
-                            break;
-                    }
-
-                    interactionChart.options.plugins.title.text = title;
-                    interactionChart.options.scales.x.title.text = 'Nivel de ' + document.getElementById('primaryFactor').options[document.getElementById('primaryFactor').selectedIndex].text;
-
-                    interactionChart.update();
-                }
-
-                // Añadir gráfico de red con D3.js
-                // Nota: Este código requeriría tener d3.js importado
-                // Se puede dibujar una red simple con SVG o un canvas
-                const networkGraph = document.getElementById('networkGraph');
-                // Aquí se añadiría el código para crear la visualización de red
-            }
         });
+
+        document.querySelectorAll('.tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    if (this.textContent.includes('Análisis de Relaciones')) {
+                        setTimeout(cargarGrafoRelaciones, 100);
+                    }
+                });
+            });
+
+
+        function cargarGrafoRelaciones() {
+            // Limpiar el contenedor por si se ha cargado previamente
+            document.getElementById('grafoRelaciones').innerHTML = '';
+
+            // Datos completos para el grafo
+            const nodos = [
+                { id: "Weight", type: "numeric", description: "Peso del individuo en kg" },
+                { id: "Height", type: "numeric", description: "Altura del individuo en cm" },
+                { id: "Age", type: "numeric", description: "Edad del individuo en años" },
+                { id: "Gender", type: "categorical", description: "Género del individuo (Masculino/Femenino)" },
+                { id: "family_history", type: "categorical", description: "Historial familiar de obesidad (Sí/No)" },
+                { id: "FAVC", type: "categorical", description: "Frecuencia de consumo de alimentos con alto contenido calórico" },
+                { id: "FCVC", type: "numeric", description: "Frecuencia de consumo de vegetales" },
+                { id: "NCP", type: "numeric", description: "Número de comidas principales al día" },
+                { id: "CAEC", type: "categorical", description: "Consumo de alimentos entre comidas" },
+                { id: "SMOKE", type: "categorical", description: "Hábito de fumar (Sí/No)" },
+                { id: "CH2O", type: "numeric", description: "Consumo de agua diario en litros" },
+                { id: "SCC", type: "categorical", description: "Control del consumo de calorías (Sí/No)" },
+                { id: "FAF", type: "numeric", description: "Frecuencia de actividad física" },
+                { id: "TUE", type: "numeric", description: "Tiempo de uso de dispositivos tecnológicos en horas" },
+                { id: "CALC", type: "categorical", description: "Consumo de alcohol" },
+                { id: "MTRANS", type: "categorical", description: "Medio de transporte habitual" },
+                { id: "obesity_level", type: "categorical", description: "Nivel de obesidad (Insuficiente/Normal/Sobrepeso/Obesidad)" },
+                { id: "IMC", type: "numeric", description: "Índice de Masa Corporal (kg/m²)" }
+            ];
+
+            const enlaces = [
+                { source: "Weight", target: "Height", type: "positive" ,strength: 0.5},
+                { source: "Age", target: "Weight", type: "positive"},
+                { source: "Age", target: "Gender", type: "anova"},
+                { source: "Gender", target: "Height", type: "anova",strength: 0.4 },
+                { source: "IMC", target: "family_history", type: "anova" },
+                { source: "Weight", target: "IMC", type: "positive", strength: 0.9 },
+                { source: "IMC", target: "obesity_level", type: "anova", strength: 1.1 },
+                { source: "IMC", target: "Gender", type: "anova" },
+                { source: "FCVC", target: "obesity_level", type: "anova" },
+                { source: "FCVC", target: "IMC", type: "positive" },
+                { source: "FCVC", target: "Weight", type: "positive" },
+                { source: "family_history", target: "FAVC", type: "chi2" },
+                { source: "family_history", target: "obesity_level", type: "chi2",strength: 0.6 },
+                { source: "FAVC", target: "obesity_level", type: "chi2", strength: 0.3 },
+                { source: "CAEC", target: "obesity_level", type: "chi2" , strength: 0.3},
+                { source: "SCC", target: "obesity_level", type: "chi2" },
+                { source: "obesity_level", target: "Gender", type: "chi2",strength: 0.7 },
+                { source: "obesity_level", target: "Weight", type: "anova",strength: 0.9 },
+                { source: "Height", target: "FAF", type: "positive" },
+                { source: "Height", target: "CH2O", type: "positive" },
+                { source: "Weight", target: "CH2O", type: "positive" },
+                { source: "Height", target: "NCP", type: "positive" },
+                { source: "Age", target: "MTRANS", type: "anova" },
+                { source: "FAVC", target: "MTRANS", type: "chi2" },
+                { source: "CALC", target: "obesity_level", type: "chi2" },
+                { source: "TUE", target: "Age", type: "negative" },
+
+            ];
+
+            // Configuración del grafo
+            const width = document.getElementById('grafoRelaciones').clientWidth;
+            const height = 600;
+
+            // Crear el SVG
+            const svg = d3.select("#grafoRelaciones")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto;");
+
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0)
+                .style("position", "absolute")
+                .style("background-color", "rgba(0, 0, 0, 0.8)")
+                .style("color", "white")
+                .style("padding", "10px")
+                .style("border-radius", "5px")
+                .style("pointer-events", "none")
+                .style("z-index", "10")
+                .style("font-size", "14px")
+                .style("max-width", "250px");
+            // Crear la simulación de fuerza
+            const simulation = d3.forceSimulation(nodos)
+                .force("link", d3.forceLink(enlaces).id(d => d.id).distance(120))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(40));
+
+            // Definir colores para los tipos de relaciones
+            const colorRelacion = {
+                "positive": "#4CAF50",
+                "negative": "#F44336",
+                "anova": "#FF9800",
+                "chi2": "#9C27B0"
+            };
+            const lineWidth = d => {
+                // Si la fortaleza no está definida, usa 2 como valor predeterminado
+                if (!d.strength) return 2;
+                // Mapea la fortaleza (normalmente entre 0 y 1) a valores entre 1 y 5
+                return 1 + (d.strength * 4);
+            };
+            // Crear las líneas para los enlaces
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(enlaces)
+                .enter()
+                .append("line")
+                .attr("stroke", d => colorRelacion[d.type])
+                .attr("stroke-width", lineWidth);
+
+            // Crear los círculos para los nodos
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(nodos)
+                .enter()
+                .append("circle")
+                .attr("r", d => d.id === "obesity_level" ? 20 : 15)
+                .attr("fill", d => d.type === "numeric" ? "#90CAF9" : "#A5D6A7")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                    .on("mouseover", function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`<strong>${d.id}</strong><br>${d.description}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function() {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+            // Añadir etiquetas a los nodos
+            const text = svg.append("g")
+                .selectAll("text")
+                .data(nodos)
+                .enter()
+                .append("text")
+                .text(d => d.id)
+                .attr("font-size", d => d.id === "obesity_level" ? 12 : 10)
+                .attr("text-anchor", "middle")
+                .attr("dy", 3)
+                .attr("fill", "#fff")
+                .attr("font-size", d => {
+                    // Ajustar el tamaño de la fuente según la longitud del texto
+                    // Palabras especiales que queremos asegurar que se ven bien
+                    const specialWords = ["Weight", "Height", "MTRANS", "Gender","SMOKE"];
+
+                    // Tamaño fijo para palabras especiales
+                    if (specialWords.includes(d.id)) {
+                        return 8; // Tamaño fijo para estas palabras
+                    }
+
+                    // Para el resto, usar la lógica de ajuste automático
+                    const textLength = d.id.length;
+                    return Math.max(8, Math.min(12, 18 - textLength));
+                })
+                .text(d => {
+                    // Acortar el texto si es muy largo
+                    if (d.id.length > 10) {
+                        return d.id.slice(0, 7) + "...";
+                    }
+                    return d.id;
+                });
+
+            // Crear una leyenda
+            const legend = svg.append("g")
+                .attr("transform", "translate(20, 20)");
+
+            // Añadir elementos de la leyenda
+            const legendData = [
+                { label: "Correlación Positiva", color: "#4CAF50", type: "line" },
+                { label: "Correlación Negativa", color: "#F44336", type: "line" },
+                { label: "ANOVA", color: "#FF9800", type: "line" },
+                { label: "Chi²", color: "#9C27B0", type: "line" },
+                { label: "Var. Numérica", color: "#90CAF9", type: "circle" },
+                { label: "Var. Categórica", color: "#A5D6A7", type: "circle" }
+            ];
+
+            legendData.forEach((item, i) => {
+                const legendRow = legend.append("g")
+                    .attr("transform", `translate(0, ${i * 20})`);
+
+                if (item.type === "line") {
+                    legendRow.append("line")
+                        .attr("x1", 0)
+                        .attr("y1", 10)
+                        .attr("x2", 30)
+                        .attr("y2", 10)
+                        .attr("stroke", item.color)
+                        .attr("stroke-width", 2);
+                } else {
+                    legendRow.append("circle")
+                        .attr("cx", 15)
+                        .attr("cy", 10)
+                        .attr("r", 7)
+                        .attr("fill", item.color);
+                }
+
+                legendRow.append("text")
+                    .attr("x", 40)
+                    .attr("y", 10)
+                    .attr("dy", "0.35em")
+                    .text(item.label)
+                    .attr("fill", "#e0e0e0");
+            });
+
+            // Actualizar la posición en cada tick
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x = Math.max(20, Math.min(width - 20, d.x)))
+                    .attr("cy", d => d.y = Math.max(20, Math.min(height - 20, d.y)));
+
+                text
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            });
+
+            // Agregar tooltips
+            node.append("title")
+                .text(d => d.id);
+
+            // Funciones para el arrastre
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
     </script>
 </body>
 </html>
