@@ -21,7 +21,6 @@ def analizar_dataset(df):
         print(f"{col}: {df[col].unique()}")
 
 
-
 def generar_reporte(correlaciones_significativas):
     correlaciones_ordenadas = sorted(
         correlaciones_significativas,
@@ -45,10 +44,6 @@ def generar_reporte(correlaciones_significativas):
             print(f"{i}. {var1} y {var2}: Asociación por ANOVA (eta²={coef:.3f}, p={corr['p_value']:.4f})")
         else:
             print(f"{i}. {var1} y {var2}: Asociación por Chi² (V={coef:.3f}, p={corr['p_value']:.4f})")
-
-    df_resultados = pd.DataFrame(correlaciones_ordenadas)
-    df_resultados.to_csv("../PREOBES/correlaciones/correlaciones_significativas.csv", index=False)
-    print("\nResultados completos guardados en 'correlaciones_significativas.csv'")
 
 
 def analizar_correlacion(df, var1, var2):
@@ -343,6 +338,15 @@ def analisis_completo_neo4j():
         resultado = analizar_correlacion(df, var1, var2)
         resultados_correlaciones.append(resultado)
 
+    df_correlaciones = pd.DataFrame(resultados_correlaciones)
+
+    # 📌 Ordenar por el valor absoluto de la correlación (de mayor a menor)
+    df_correlaciones = df_correlaciones.sort_values(by="correlation", key=abs, ascending=False)
+
+    # 📌 Guardar en CSV
+    df_correlaciones.to_csv("../PREOBES/correlaciones/correlaciones_variables.csv", index=False)
+
+    print(f"\nSe guardaron {len(resultados_correlaciones)} relaciones en correlaciones_variables.csv")
     # Filtrar correlaciones significativas (p < 0.05)
     correlaciones_significativas = [corr for corr in resultados_correlaciones
                                     if corr['significant'] and corr['correlation'] is not None]
@@ -357,16 +361,3 @@ def analisis_completo_neo4j():
     exportar_grafo_existente_a_png(correlaciones_significativas)
     print("\nAnálisis completo finalizado y grafo creado en Neo4j.")
     return correlaciones_significativas
-
-
-"""
-if __name__ == "__main__":
-    print("Iniciando análisis de relaciones entre variables...")
-    correlaciones = analisis_completo_neo4j()
-
-    # Cerrar la conexión a Neo4j
-    driver.close()
-
-    print("\nProceso completado.")
-"""
-
