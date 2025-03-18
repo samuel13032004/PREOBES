@@ -20,7 +20,6 @@ def main():
     print("ANÁLISIS DE DATASET DE OBESIDAD")
     print("=" * 80)
 
-    # 1. Cargar datos
     print("\n1. CARGANDO DATOS DESDE MONGODB...")
     try:
         df, X, y = cargar_datos()
@@ -30,7 +29,6 @@ def main():
         print(f"✗ Error al cargar datos: {str(e)}")
         return
 
-    # 2. Análisis de importancia
     print("\n2. ANALIZANDO IMPORTANCIA DE VARIABLES...")
     try:
         analizar_importancia(X, y)
@@ -62,8 +60,7 @@ def main():
 
     print("\n" + "=" * 80)
     print("=" * 80)
-    """
-
+"""
 
     # 4. Análisis de factores de obesidad
     print("\n4. ANALIZANDO FACTORES DE OBESIDAD...")
@@ -101,7 +98,7 @@ def main():
     PASSWORD = "ObesityDataSet"
     driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 
-    correlaciones = analisis_completo_neo4j()
+    analisis_completo_neo4j()
 
     driver.close()
 
