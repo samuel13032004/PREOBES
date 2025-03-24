@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 import pickle
 import pandas as pd
 import numpy as np
 import os
 from openai import OpenAI
-
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from io import BytesIO
+import datetime
 app = Flask(__name__)
 
 # Configurar la API key de OpenAI
@@ -114,6 +120,153 @@ def get_ai_recommendation(user_data, prediction, imc):
         """
 
 
+def create_pdf_report(user_data, prediction, imc, probabilities, ai_recommendation):
+    """
+    Crea un informe en PDF con los resultados del análisis y recomendaciones
+    """
+    # Crear un buffer en memoria para el PDF
+    buffer = BytesIO()
+
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(buffer, pagesize=letter,
+                            rightMargin=72, leftMargin=72,
+                            topMargin=72, bottomMargin=18)
+
+    # Estilos para el PDF
+    styles = getSampleStyleSheet()
+
+    # Modificar el estilo Title existente en lugar de añadir uno nuevo
+    styles['Title'].alignment = TA_CENTER
+    styles['Title'].spaceAfter = 12
+
+    # Añadir otros estilos personalizados con nombres diferentes
+    styles.add(ParagraphStyle(name='CustomSubtitle',
+                              fontName='Helvetica-Bold',
+                              fontSize=14,
+                              spaceAfter=6))
+
+    styles.add(ParagraphStyle(name='CustomNormal',
+                              fontName='Helvetica',
+                              fontSize=11,
+                              alignment=TA_JUSTIFY,
+                              spaceAfter=6))
+
+    # Elementos del PDF
+    elements = []
+
+    # Título y fecha
+    fecha_actual = datetime.datetime.now().strftime("%d/%m/%Y")
+    elements.append(Paragraph("Informe de Evaluación de Riesgo de Obesidad", styles['Title']))
+    elements.append(Paragraph(f"Fecha de generación: {fecha_actual}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # Mapeo de categorías de predicción
+    prediction_mapping = {
+        "Insufficient_Weight": "Peso Insuficiente",
+        "Normal_Weight": "Peso Normal",
+        "Overweight_Level_I": "Sobrepeso Nivel I",
+        "Overweight_Level_II": "Sobrepeso Nivel II",
+        "Obesity_Type_I": "Obesidad Tipo I",
+        "Obesity_Type_II": "Obesidad Tipo II",
+        "Obesity_Type_III": "Obesidad Tipo III"
+    }
+    prediction_es = prediction_mapping.get(prediction, prediction)
+
+    # Información personal
+    elements.append(Paragraph("Datos personales", styles['CustomSubtitle']))
+
+    # Convertir datos a formato legible para el informe
+    gender = "Masculino" if user_data.get('Gender') == 'Male' else "Femenino"
+    family_history = "Sí" if user_data.get('family_history') == 'yes' else "No"
+    favc = "Sí" if user_data.get('FAVC') == 'yes' else "No"
+    smoke = "Sí" if user_data.get('SMOKE') == 'yes' else "No"
+
+    # Actividad física
+    faf_mapping = {
+        "0": "Sedentario",
+        "1": "Ligero",
+        "2": "Moderado",
+        "3": "Intenso"
+    }
+    physical_activity = faf_mapping.get(user_data.get('FAF', '0'), "No especificado")
+
+    # Tabla de datos personales
+    data = [
+        ["Género", gender],
+        ["Edad", f"{user_data.get('Age')} años"],
+        ["Altura", f"{user_data.get('Height')} metros"],
+        ["Peso", f"{user_data.get('Weight')} kg"],
+        ["IMC", f"{imc}"],
+        ["Historial familiar de obesidad", family_history],
+        ["Consumo frecuente de alimentos altos en calorías", favc],
+        ["Fumador", smoke],
+        ["Nivel de actividad física", physical_activity]
+    ]
+
+    t = Table(data, colWidths=[200, 200])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    elements.append(t)
+    elements.append(Spacer(1, 12))
+
+    # Resultado de la evaluación
+    elements.append(Paragraph("Resultado de la Evaluación", styles['CustomSubtitle']))
+    elements.append(Paragraph(f"Su nivel de riesgo es: <b>{prediction_es}</b>", styles['Normal']))
+    elements.append(Paragraph(f"Índice de Masa Corporal (IMC): <b>{imc}</b>", styles['Normal']))
+    elements.append(Spacer(1, 6))
+
+    # Probabilidades
+    elements.append(Paragraph("Desglose de probabilidades:", styles['Normal']))
+    prob_data = [["Categoría", "Probabilidad (%)"]]
+
+    # Traducir nombres de categorías
+    for category, prob in probabilities:
+        category_es = prediction_mapping.get(category, category)
+        prob_data.append([category_es, f"{prob}%"])
+
+    prob_table = Table(prob_data, colWidths=[300, 100])
+    prob_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    elements.append(prob_table)
+    elements.append(Spacer(1, 12))
+
+    # Recomendaciones personalizadas
+    elements.append(Paragraph("Recomendaciones Personalizadas", styles['CustomSubtitle']))
+
+    # Procesar párrafos de recomendaciones
+    for paragraph in ai_recommendation.split('\n\n'):
+        if paragraph.strip():
+            elements.append(Paragraph(paragraph.strip(), styles['CustomNormal']))
+
+    elements.append(Spacer(1, 12))
+
+    # Disclaimer
+    elements.append(Paragraph("<i>Este informe es generado automáticamente y tiene fines informativos. " +
+                              "No reemplaza el consejo de un profesional de la salud. " +
+                              "Consulte siempre con su médico o nutricionista antes de implementar cambios " +
+                              "significativos en su dieta o régimen de actividad física.</i>", styles['Normal']))
+
+    # Generar el PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
 @app.route('/predict', methods=['POST'])
 def predict():
     # Recoger los datos del formulario
@@ -178,14 +331,56 @@ def predict():
     # Obtener recomendaciones personalizadas de la IA
     ai_recommendation = get_ai_recommendation(form_data, pred_label, imc_value)
 
+    # Guardar los datos de la sesión para la descarga del PDF
+    # Esto normalmente se haría con una base de datos o sesiones,
+    # pero para simplificar usaremos variables globales
+    app.config['LAST_PREDICTION'] = {
+        'form_data': form_data,
+        'prediction': pred_label,
+        'imc': imc_value,
+        'probabilities': sorted_probabilities,
+        'ai_recommendation': ai_recommendation
+    }
+
     return render_template(
         'result.html',
         prediction=pred_label,
         imc=imc_value,
         probabilities=sorted_probabilities,
-        ai_recommendation=ai_recommendation  # Pasar la recomendación personalizada a la plantilla
+        ai_recommendation=ai_recommendation
     )
 
 
+@app.route('/download-report')
+def download_report():
+    """
+    Genera y descarga un informe PDF con los resultados de la evaluación
+    """
+    # Recuperar los datos de la última predicción
+    last_prediction = app.config.get('LAST_PREDICTION')
+
+    if not last_prediction:
+        # Si no hay datos, redirigir a la página principal
+        return "No hay datos disponibles para generar el informe. Por favor, realice una evaluación primero.", 400
+
+    # Crear el PDF
+    pdf_buffer = create_pdf_report(
+        last_prediction['form_data'],
+        last_prediction['prediction'],
+        last_prediction['imc'],
+        last_prediction['probabilities'],
+        last_prediction['ai_recommendation']
+    )
+
+    # Generar un nombre de archivo con la fecha actual
+    filename = f"informe_obesidad_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+    # Enviar el archivo al usuario
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
 if __name__ == '__main__':
     app.run(debug=True)
