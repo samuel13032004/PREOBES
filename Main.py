@@ -6,7 +6,7 @@ from tensorboard import summary
 
 from cargar_datos.cargar_datos_mongodb import cargar_datos
 from analisis_variables.analisis_importancia_clasificacion import analizar_importancia
-from correlaciones.analisis_relaciones import analisis_completo_neo4j
+from correlaciones.analisis_relaciones import analisis_completo_neo4j, crear_matriz_correlacion
 from entrenamiento_modelo.clasificacion import entrenar_modelo, predecir
 import pandas as pd
 import seaborn as sns
@@ -99,6 +99,8 @@ def main():
     driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 
     analisis_completo_neo4j()
+
+    crear_matriz_correlacion()
 
     driver.close()
 
