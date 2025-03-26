@@ -1,0 +1,71 @@
+<div id="relations" class="tab-content">
+        <h2 class="section-title"><i class="fas fa-project-diagram"></i> Grafo de Relaciones entre Variables</h2>
+             <!-- Nuevas tarjetas de correlaciones -->
+        <div class="cards-container">
+            <div class="info-card">
+                <h3>Correlaciones Más Fuertes</h3>
+                <p>Las relaciones con mayor impacto en el estudio son:</p>
+                <ul>
+                    <li><strong>IMC → Nivel de Obesidad</strong>: Relación Chi² con intensidad de 0.97, siendo el principal determinante del nivel de obesidad.</li>
+                    <li><strong>Peso → IMC</strong>: Correlación positiva con intensidad de 0.93, mostrando cómo el peso influye directamente en el IMC.</li>
+                    <li><strong>Nivel de Obesidad → Peso</strong>: Relación ANOVA con intensidad de 0.85, evidenciando la relación bidireccional entre estas variables.</li>
+                </ul>
+            </div>
+
+            <div class="cards-container">
+                <div class="info-card">
+                    <h3>Relaciones Claves en el Estilo de Vida</h3>
+                    <p>Algunos hábitos tienen correlaciones significativas que pueden impactar la salud:</p>
+                    <ul>
+                        <li><strong>Consumo de Agua → Frecuencia de Actividad Física</strong>: Correlación positiva (0.16, Pearson). Indica que quienes realizan más actividad física tienden a consumir más agua, lo que resalta la importancia de la hidratación en la rutina deportiva.</li>
+                        <li><strong>Frecuencia de Consumo de Verduras → Número de Comidas Principales</strong>: Correlación positiva (0.04, Pearson). Sugiere que las personas que consumen más verduras suelen tener una mayor estructura en sus comidas diarias.</li>
+                        <li><strong>Fumar → Consumo de Alcohol</strong>: Relación Chi² con intensidad de 0.11. Muestra que quienes fuman tienen una mayor probabilidad de consumir alcohol con más frecuencia.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>Variables Determinantes por Género</h3>
+                <p>El género muestra influencias importantes:</p>
+                <ul>
+                    <li><strong>Nivel de Obesidad → Género</strong>: Relación Chi² con intensidad de 0.56, mostrando diferencias significativas en obesidad por género.</li>
+                    <li><strong>Género → Altura</strong>: Relación ANOVA que confirma diferencias antropométricas naturales.</li>
+                    <li>El género parece influir en varios factores de estilo de vida que indirectamente afectan el nivel de obesidad.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="info-card">
+            <h3>Interpretación del Grafo</h3>
+            <p>Este grafo muestra las relaciones estadísticamente significativas entre diferentes variables. Las líneas indican el tipo de relación:</p>
+            <ul>
+                <li><span style="color: #4CAF50;">Verde</span>: Correlación positiva: una variable aumenta, cuando la otra aumenta.</li>
+                <li><span style="color: #F44336;">Rojo</span>: Correlación negativa: una variable aumenta, cuando la otra disminuye.</li>
+                <li><span style="color: #FF9800;">Naranja</span>: Relación ANOVA: Se usa para comparar si una variable categórica afecta a una variable numérica.</li>
+                <li><span style="color: #9C27B0;">Morado</span>: Relación Chi²: Se usa para ver si dos variables categóricas están relacionadas.</li>
+            </ul>
+            <p>Los nodos azules representan variables numéricas, mientras que los verdes son variables categóricas.</p>
+        </div>
+
+        <div class="chart-container">
+            <div id="grafoRelaciones" style="width:100%; height:600px;"></div>
+        </div>
+
+        <div class="chart-container">
+            <h2>Matriz de Correlación</h2>
+            <div class="correlation-matrix"></div>
+        </div>
+
+        <div class="info-card">
+            <div style="margin-top: 20px;">
+                <h3>Interpretación de Matriz de Correlacion</h3>
+                <ul>
+                    <li><span style="background-color: rgb(76, 175, 80); color: white; padding: 2px;">Verde sólido</span>: Correlación de la variable consigo misma (1.0)</li>
+                    <li><span style="background-color: rgb(0, 255, 0); color: black; padding: 2px;">Verde intenso</span>: Correlación positiva muy fuerte</li>
+                    <li><span style="background-color: rgb(128, 255, 128); color: black; padding: 2px;">Verde claro</span>: Correlación positiva débil</li>
+                    <li><span style="background-color: rgb(255, 0, 0); color: white; padding: 2px;">Rojo intenso</span>: Correlación negativa muy fuerte</li>
+                    <li><span style="background-color: rgb(255, 128, 128); color: black; padding: 2px;">Rojo claro</span>: Correlación negativa débil</li>
+                    <li><span style="background-color: rgb(245, 245, 245); color: black; padding: 2px;">Gris muy claro</span>: Correlación casi inexistente</li>
+                </ul>
+            </div>
+        </div>
+    </div>

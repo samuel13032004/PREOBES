@@ -1,0 +1,222 @@
+<div id="form" class="tab-content active">
+            <form action="/predict" method="post">
+                <h2 class="section-title"><i class="fas fa-user"></i> Información Personal</h2>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Name">Nombre:</label>
+                            <input type="text" id="Name" name="Name" required placeholder="Ingrese su nombre">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Surname">Apellidos:</label>
+                            <input type="text" id="Surname" name="Surname" required placeholder="Ingrese sus apellidos">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Gender">Género:</label>
+                            <select id="Gender" name="Gender" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="Male">Masculino</option>
+                                <option value="Female">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="birthdate">Fecha de Nacimiento:</label>
+                            <input type="date" id="birthdate" name="birthdate" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Height">Altura:</label>
+                            <input type="number" step="0.01" id="Height" name="Height" min="0.5" max="2.5" required placeholder="Metros">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="Weight">Peso:</label>
+                            <input type="number" id="Weight" name="Weight" min="20" max="300" required placeholder="Kilogramos">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="family_history">
+                        Historial familiar de obesidad:
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltip-text">Indique si tiene familiasres directos (padres, hermanos) con obesidad.</span>
+                        </span>
+                    </label>
+                    <select id="family_history" name="family_history" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <h2 class="section-title"><i class="fas fa-utensils"></i> Hábitos Alimenticios</h2>
+                <div class="form-group">
+                    <label for="FAVC">
+                        ¿Consume alimentos altos en calorías frecuentemente?
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltip-text">Comida rápida, dulces, alimentos fritos, etc.</span>
+                        </span>
+                    </label>
+                    <select id="FAVC" name="FAVC" required>
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="yes">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="FCVC">
+                                Frecuencia de consumo de vegetales:
+                                <span class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltip-text">Escala del 1 al 3 (1: nunca, 2: a veces, 3: siempre)</span>
+                                </span>
+                            </label>
+                            <select id="FCVC" name="FCVC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="1">1 - Nunca/Raramente</option>
+                                <option value="2">2 - A veces</option>
+                                <option value="3">3 - Siempre/Frecuentemente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="NCP">Número de comidas principales al día:</label>
+                            <select id="NCP" name="NCP" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="1">1 comida</option>
+                                <option value="2">2 comidas</option>
+                                <option value="3">3 comidas</option>
+                                <option value="4">4 o más comidas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="CAEC">Consumo de alimentos entre comidas:</label>
+                            <select id="CAEC" name="CAEC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="no">No</option>
+                                <option value="Sometimes">A veces</option>
+                                <option value="Frequently">Frecuentemente</option>
+                                <option value="Always">Siempre</option>
+                            </select>
+                        </div>
+                       </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="CH2O">Consumo de agua diario:</label>
+                                <input type="number" step="0.1" id="CH2O" name="CH2O" min="0" max="10" required placeholder="Litros">
+                            </div>
+                        </div>
+                    </div>
+
+                <h2 class="section-title"><i class="fas fa-running"></i> Estilo de Vida</h2>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="SCC">
+                                ¿Se considera sedentario?
+                                <span class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltip-text">Poca actividad física diaria y mucho tiempo sentado.</span>
+                                </span>
+                            </label>
+                            <select id="SCC" name="SCC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="yes">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="FAF">Frecuencia de actividad física semanal:</label>
+                            <select id="FAF" name="FAF" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="0">0 - Ninguna</option>
+                                <option value="1">1 - 1 vez por semana</option>
+                                <option value="2">2 - 2 veces por semana</option>
+                                <option value="3">3 - 3 veces por semana</option>
+                                <option value="4">4 o más veces por semana</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="MTRANS">Modo de transporte habitual:</label>
+                            <select id="MTRANS" name="MTRANS" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="Walking">Caminando</option>
+                                <option value="Bike">Bicicleta</option>
+                                <option value="Motorbike">Moto</option>
+                                <option value="Public_Transportation">Transporte público</option>
+                                <option value="Automobile">Automóvil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="TUE">Horas de uso de tecnología al día:</label>
+                            <input type="number" id="TUE" name="TUE" min="0" max="24" required placeholder="Horas">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="CALC"> ¿Con qué frecuencia bebe alcohol?</label>
+                            <select id="CALC" name="CALC" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="No">No</option>
+                                <option value="Sometimes">A veces</option>
+                                <option value="Frequently">Frecuentemente</option>
+                                <option value="Always">Siempre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="SMOKE">¿Fuma?</label>
+                            <select id="SMOKE" name="SMOKE" required>
+                                <option value="" disabled selected>Seleccione una opción</option>
+                                <option value="yes">Sí</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <button type="submit" class="btn-submit">Evaluar Riesgo</button>
+            </form>
+        </div>
+        </div>
