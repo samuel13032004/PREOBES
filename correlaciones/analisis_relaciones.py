@@ -4,6 +4,8 @@ import scipy.stats as stats
 import numpy as np
 from scipy.stats import chi2_contingency
 from cargar_datos.cargar_datos_neo4j import obtener_datos_completos
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 URI = "bolt://localhost:7687"
 USER = "neo4j"
@@ -50,7 +52,7 @@ def analizar_correlacion(df, var1, var2):
     """Analiza la correlación/asociación entre dos variables"""
     if var1 not in df.columns or var2 not in df.columns:
         print(f"Error: Una de las variables {var1} o {var2} no existe en el DataFrame")
-        return {"vars": [var1, var2], "correlation": None, "p_value": None, "significant": False}
+        return {"vars": [var1, var2], "correlation": None, "p_value": None}
 
     tipo_var1 = 'categórica' if df[var1].dtype == 'object' else 'numérica'
     tipo_var2 = 'categórica' if df[var2].dtype == 'object' else 'numérica'
@@ -59,7 +61,7 @@ def analizar_correlacion(df, var1, var2):
 
     if len(datos) < 10:
         print(f"No hay suficientes datos para analizar {var1} y {var2}")
-        return {"vars": [var1, var2], "correlation": None, "p_value": None, "significant": False}
+        return {"vars": [var1, var2], "correlation": None, "p_value": None}
 
     if tipo_var1 == 'numérica' and tipo_var2 == 'numérica':
         try:
@@ -70,12 +72,11 @@ def analizar_correlacion(df, var1, var2):
                 "vars": [var1, var2],
                 "correlation": corr,
                 "p_value": p_value,
-                "significant": p_value < 0.05,
                 "method": "Pearson"
             }
         except Exception as e:
             print(f"Error: {e}")
-            return {"vars": [var1, var2], "correlation": None, "p_value": None, "significant": False}
+            return {"vars": [var1, var2], "correlation": None, "p_value": None}
 
     elif (tipo_var1 == 'categórica' and tipo_var2 == 'numérica') or (
             tipo_var1 == 'numérica' and tipo_var2 == 'categórica'):
@@ -101,7 +102,6 @@ def analizar_correlacion(df, var1, var2):
                 "vars": [var1, var2],
                 "correlation": eta_squared,
                 "p_value": p_value,
-                "significant": p_value < 0.05,
                 "method": "ANOVA"
             }
         except Exception as e:
@@ -124,12 +124,11 @@ def analizar_correlacion(df, var1, var2):
                 "vars": [var1, var2],
                 "correlation": v_cramer,
                 "p_value": p_value,
-                "significant": p_value < 0.05,
                 "method": "Chi²"
             }
         except Exception as e:
             print(f"Error: {e}")
-            return {"vars": [var1, var2], "correlation": None, "p_value": None, "significant": False}
+            return {"vars": [var1, var2], "correlation": None, "p_value": None}
 
 
 def calcular_imc(df):
@@ -286,7 +285,8 @@ def crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, umb
     # Guardar como PNG
     plt.savefig(filename, dpi=300, bbox_inches='tight')
     print(f"Grafo exportado como imagen PNG: {filename}")
-
+    plt.show()
+    plt.close()
     return plt
 
 
@@ -349,7 +349,7 @@ def analisis_completo_neo4j():
     print(f"\nSe guardaron {len(resultados_correlaciones)} relaciones en correlaciones_variables.csv")
     # Filtrar correlaciones significativas (p < 0.05)
     correlaciones_significativas = [corr for corr in resultados_correlaciones
-                                    if corr['significant'] and corr['correlation'] is not None]
+                                    if corr['p_value'] < 0.05 and corr['correlation'] is not None]
 
     print(f"\nSe encontraron {len(correlaciones_significativas)} relaciones significativas entre variables.")
 
@@ -361,3 +361,49 @@ def analisis_completo_neo4j():
     exportar_grafo_existente_a_png(correlaciones_significativas)
     print("\nAnálisis completo finalizado y grafo creado en Neo4j.")
     return correlaciones_significativas
+
+
+def crear_matriz_correlacion(df=None):
+    # Si no se proporciona un DataFrame, obtener datos de Neo4j
+    if df is None:
+        df = obtener_datos_completos()
+
+    # Calcular IMC si no está presente
+    def calcular_imc(dataframe):
+        dataframe['Height'] = pd.to_numeric(dataframe['Height'], errors='coerce')
+        dataframe['Weight'] = pd.to_numeric(dataframe['Weight'], errors='coerce')
+        dataframe['IMC'] = dataframe['Weight'] / (dataframe['Height'] ** 2)
+        return dataframe
+
+    df = calcular_imc(df)
+
+    # Seleccionar columnas numéricas
+    columnas_numericas = ['Age', 'Height', 'Weight', 'IMC', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
+
+    # Crear matriz de correlación
+    matriz_corr = df[columnas_numericas].corr()
+
+    # Visualización de la matriz de correlación
+    plt.figure(figsize=(10, 8))
+    mapa_calor = sns.heatmap(matriz_corr,
+                             annot=True,  # Mostrar valores numéricos
+                             cmap='coolwarm',  # Mapa de colores
+                             center=0,  # Centrar en 0
+                             vmin=-1,
+                             vmax=1,
+                             square=True)
+
+    plt.title('Matriz de Correlación de Variables Numéricas', fontsize=15)
+    plt.tight_layout()
+    # Guardar la matriz de correlación
+    plt.savefig('../PREOBES/graficos/matriz_correlacion.png', dpi=300)
+    plt.show()
+    plt.close()
+    # Imprimir matriz de correlación en consola
+    print("Matriz de Correlación:")
+    print(matriz_corr)
+
+    # Guardar matriz de correlación en CSV
+    matriz_corr.to_csv('../PREOBES/correlaciones/matriz_correlacion.csv')
+
+    return matriz_corr
