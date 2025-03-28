@@ -1,38 +1,38 @@
 <div id="form" class="tab-content active">
             <form action="/predict" method="post">
                 <h2 class="section-title"><i class="fas fa-user"></i> Información Personal</h2>
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="Name">Nombre:</label>
-                            <input type="text" id="Name" name="Name" required placeholder="Ingrese su nombre">
-                        </div>
-                    </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="Surname">Apellidos:</label>
-                            <input type="text" id="Surname" name="Surname" required placeholder="Ingrese sus apellidos">
-                        </div>
-                    </div>
+                        <!-- Campo oculto con el ID del usuario -->
+        <input type="hidden" name="user_id" value="{{ session['user_id'] }}">
+
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="Name">Nombre:</label>
+                    <input type="text" id="Name" name="Name" value="{{ session['name'] }}" readonly>
                 </div>
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="Gender">Género:</label>
-                            <select id="Gender" name="Gender" required>
-                                <option value="" disabled selected>Seleccione una opción</option>
-                                <option value="Male">Masculino</option>
-                                <option value="Female">Femenino</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="birthdate">Fecha de Nacimiento:</label>
-                            <input type="date" id="birthdate" name="birthdate" required>
-                        </div>
-                    </div>
+            </div>
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="Surname">Apellidos:</label>
+                    <input type="text" id="Surname" name="Surname" value="{{ session['surname'] }}" readonly>
                 </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="Gender">Género:</label>
+                    <input type="text" id="Gender" name="Gender" value="{% if session['Gender'] == 'Male' %}Masculino{% elif session['Gender'] == 'Female' %}Femenino{% else %}Desconocido{% endif %}" readonly>
+                </div>
+            </div>
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="birthdate">Fecha de Nacimiento:</label>
+                    <input type="date" id="birthdate" name="birthdate" value="{{ session['birthdate'] }}" readonly>
+                </div>
+            </div>
+        </div>
 
                 <div class="form-row">
                     <div class="form-col">

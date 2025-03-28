@@ -49,6 +49,9 @@
             document.getElementById(tabName).classList.add('active');
             event.currentTarget.classList.add('active');
         }
+
+        const userId = "{{ session['user_id'] }}"; // Asegúrate de pasar correctamente el `user_id` desde el backend
+
     </script>
     <script src="{{ url_for('static', filename='js/script_cuadro_mandos.js') }}"></script>
 </body>
