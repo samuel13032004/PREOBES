@@ -8,7 +8,7 @@ from datetime import datetime
 from recomendador.recomendador import calcular_edad
 
 
-def create_pdf_report(user_data, prediction, imc, probabilities, ai_recommendation, users_collection):
+def create_pdf_report(users_collection,user_data, prediction, imc, probabilities, ai_recommendation):
     """
     Crea un informe en PDF con los resultados del análisis y recomendaciones
     Añade iconos y mejora el diseño visual
@@ -86,7 +86,12 @@ def create_pdf_report(user_data, prediction, imc, probabilities, ai_recommendati
         "Obesity_Type_II": "🔴 Obesidad Tipo II",
         "Obesity_Type_III": "🔴 Obesidad Tipo III"
     }
-    prediction_es = prediction_mapping.get(prediction, prediction)
+    if isinstance(prediction, dict):
+        pred_value = prediction.get("label", "")
+    else:
+        pred_value = prediction
+
+    prediction_es = prediction_mapping.get(pred_value, pred_value)
 
     # Datos personales con icono 👤
     # Cargar la imagen del icono "user.png"
