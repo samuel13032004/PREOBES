@@ -7,6 +7,7 @@ from rutas_backend.rutas import configurar_rutas_configuracion
 from utilidades.modelos import cargar_modelos
 app = Flask(__name__)
 app.config['DEBUG'] = True  # Enable debugging in development
+app.secret_key = 'your_secret_key_here'  # Replace with a strong secret key
 
 modelo, scaler, le, model_columns = cargar_modelos()
 token_openai = api_key=os.getenv("apikey")
