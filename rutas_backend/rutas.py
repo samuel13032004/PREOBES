@@ -287,7 +287,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
                                       reverse=True)
 
         # Obtener recomendaciones personalizadas de la IA
-        ai_recommendation = get_ai_recommendation(form_data, pred_label, imc_value,token_openai)
+        ai_recommendation = get_ai_recommendation(form_data, pred_label, imc_value,reports_collection,token_openai)
 
         # Guardar los datos de la sesión para la descarga del PDF
         # Esto normalmente se haría con una base de datos o sesiones,
