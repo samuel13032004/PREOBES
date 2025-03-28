@@ -349,14 +349,10 @@
             }
         }
 
+ document.getElementById('variableForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-document.getElementById("userIdForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-    const userId = document.getElementById("user_id").value;
-    document.getElementById("variableSelection").style.display = "block";
-
-    // Remove any existing event listener to prevent multiple attachments
-    const variableForm = document.getElementById("variableForm");
+        const variableForm = document.getElementById("variableForm");
     variableForm.removeEventListener("submit", handleVariableSubmit);
     variableForm.addEventListener("submit", handleVariableSubmit);
 
@@ -364,7 +360,7 @@ document.getElementById("userIdForm").addEventListener("submit", function(event)
         event.preventDefault();
         const variable = document.getElementById("variable").value;
 
-        fetch(`/evolucion-data?user_id=${userId}&variable=${variable}`)
+        fetch(`/evolucion-data?variable=${variable}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -461,8 +457,6 @@ document.getElementById("userIdForm").addEventListener("submit", function(event)
             });
     }
 });
-
-
 //Matriz de correlacion
 
 
@@ -563,3 +557,4 @@ document.getElementById("userIdForm").addEventListener("submit", function(event)
             }
             console.log("Edad calculada:", age);
         });
+
