@@ -13,7 +13,7 @@ def calcular_edad(fecha_nacimiento):
     return edad
 
 
-def get_ai_recommendation(user_data, prediction, imc, token_openai):
+def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_openai):
     """
     Genera recomendaciones personalizadas usando la API de OpenAI
     basadas en los datos del usuario y la predicción
