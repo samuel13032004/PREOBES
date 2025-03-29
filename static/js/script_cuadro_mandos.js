@@ -558,3 +558,86 @@
             console.log("Edad calculada:", age);
         });
 
+
+
+
+
+
+
+         // Función para cargar los informes cuando se abra la pestaña correspondiente
+function loadUserReports() {
+    const reportsContainer = document.getElementById('reports-container');
+    const loadingElement = document.getElementById('loading-reports');
+
+    // Mostrar mensaje de carga
+    if (loadingElement) loadingElement.style.display = 'block';
+    if (reportsContainer) reportsContainer.innerHTML = '';
+
+    // Realizar la petición AJAX para obtener los informes
+    fetch('/api/user_reports')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar informes');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Ocultar mensaje de carga
+            if (loadingElement) loadingElement.style.display = 'none';
+
+            // Verificar si hay informes
+            if (data.reports && data.reports.length > 0) {
+                // Crear lista de informes
+                const reportsList = document.createElement('ul');
+                reportsList.className = 'reports-list';
+
+                data.reports.forEach(report => {
+                    const reportItem = document.createElement('li');
+                    reportItem.innerHTML = `
+                        Informe Nº ${report.report_number} - 
+                        <a href="/static/reports/${report.filename}" target="_blank">
+                            Descargar informe
+                        </a>
+                    `;
+                    reportsList.appendChild(reportItem);
+                });
+
+                reportsContainer.appendChild(reportsList);
+            } else {
+                // Mostrar mensaje si no hay informes
+                reportsContainer.innerHTML = '<p>No tienes informes generados aún.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (loadingElement) loadingElement.style.display = 'none';
+            reportsContainer.innerHTML = '<p>No se pudieron cargar los informes. Por favor, intenta nuevamente.</p>';
+        });
+}
+
+// Modificar la función openTab para cargar los informes cuando se seleccione esa pestaña
+function openTab(tabName) {
+    const tabContents = document.getElementsByClassName('tab-content');
+    for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove('active');
+    }
+    const tabs = document.getElementsByClassName('tab');
+    for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+    }
+    document.getElementById(tabName).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    // Si se selecciona la pestaña de informes, cargar los informes
+    if (tabName === 'mis_informes') {
+        loadUserReports();
+    }
+}
+
+// También podemos cargar los informes cuando la página se cargue completamente
+document.addEventListener('DOMContentLoaded', function() {
+    // Si la pestaña activa es la de informes, cargar informes
+    if (document.getElementById('mis_informes').classList.contains('active')) {
+        loadUserReports();
+    }
+});
