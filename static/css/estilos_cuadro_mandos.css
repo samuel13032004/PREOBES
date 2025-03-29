@@ -399,3 +399,61 @@ body {
             color: white;
             font-weight: bold;
         }
+
+
+
+        /* Informe */
+
+        .reports-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .reports-list li {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reports-list a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .reports-list a:hover {
+            color: #3498db;
+        }
+
+        .report-date {
+            color: #777;
+            font-size: 0.9em;
+        }
+
+            /* Informe prueba*/
+
+
+        #pdf-list {
+            padding: 10px;
+        }
+
+        .report-item {
+            margin: 5px 0;
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .report-item a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        .report-item a:hover {
+            color: #007bff;
+        }
