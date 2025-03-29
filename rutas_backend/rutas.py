@@ -1,3 +1,5 @@
+import os
+
 from flask import render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
@@ -312,6 +314,27 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
         }
         reports_collection.insert_one(report_entry)
 
+        pdf_buffer = create_pdf_report(
+            users_collection,
+            form_data,
+            pred_label,
+            imc_value,
+            sorted_probabilities,
+            ai_recommendation
+        )
+
+        # Crear carpeta si no existe
+        output_dir = "static/reports"
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Nombre personalizado
+        filename = f"informe_{user_id}_{report_number}.pdf"
+        file_path = os.path.join(output_dir, filename)
+
+        # Guardar PDF en disco
+        with open(file_path, "wb") as f:
+            f.write(pdf_buffer.getbuffer())
+
         return render_template(
             'result.html',
             prediction=pred_label,
@@ -319,3 +342,37 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             probabilities=sorted_probabilities,
             ai_recommendation=ai_recommendation
         )
+
+
+    @app.route('/api/user_reports', methods=['GET'])
+    def get_user_reports():
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "No autenticado"}), 401
+
+        reports_dir = os.path.join(app.root_path, 'static', 'reports')
+        user_reports = []
+
+        if os.path.exists(reports_dir):
+            for filename in os.listdir(reports_dir):
+                if f"informe_{user_id}_" in filename and filename.endswith('.pdf'):
+                    try:
+                        report_number = filename.split('_')[2].split('.')[0]
+                        user_reports.append({
+                            'filename': filename,
+                            'report_number': report_number
+                        })
+                    except IndexError:
+                        report_number = "N/A"
+                        user_reports.append({
+                            'filename': filename,
+                            'report_number': report_number
+                        })
+
+        # Ordenar por número de informe
+        try:
+            user_reports.sort(key=lambda x: int(x['report_number']), reverse=True)
+        except (ValueError, TypeError):
+            user_reports.sort(key=lambda x: x['filename'], reverse=True)
+
+        return jsonify({"reports": user_reports})
