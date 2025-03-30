@@ -594,7 +594,7 @@ function loadUserReports() {
                 data.reports.forEach(report => {
                     const reportItem = document.createElement('li');
                     reportItem.innerHTML = `
-                        Informe Nº ${report.report_number} - 
+                        📄 Informe Nº ${report.report_number} - 
                         <a href="/static/reports/${report.filename}" target="_blank">
                             Descargar informe
                         </a>
