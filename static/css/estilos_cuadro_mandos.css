@@ -418,6 +418,8 @@ body {
             display: flex;
             justify-content: space-between;
             align-items: center;
+                color: #000; /* Texto negro para todos los elementos dentro de los items */
+
         }
 
         .reports-list a {
@@ -434,26 +436,4 @@ body {
         .report-date {
             color: #777;
             font-size: 0.9em;
-        }
-
-            /* Informe prueba*/
-
-
-        #pdf-list {
-            padding: 10px;
-        }
-
-        .report-item {
-            margin: 5px 0;
-            padding: 8px;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .report-item a {
-            text-decoration: none;
-            color: #333;
-        }
-
-        .report-item a:hover {
-            color: #007bff;
         }
