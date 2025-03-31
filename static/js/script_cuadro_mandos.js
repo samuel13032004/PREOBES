@@ -1,4 +1,3 @@
-
         // Inicializar gráficos cuando se carga la página
         document.addEventListener('DOMContentLoaded', function() {
             // Gráfico de impacto de factores
@@ -559,11 +558,6 @@
         });
 
 
-
-
-
-
-
          // Función para cargar los informes cuando se abra la pestaña correspondiente
 function loadUserReports() {
     const reportsContainer = document.getElementById('reports-container');
@@ -639,5 +633,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Si la pestaña activa es la de informes, cargar informes
     if (document.getElementById('mis_informes').classList.contains('active')) {
         loadUserReports();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action="/predict"]');
+    const spinnerOverlay = document.getElementById('spinnerOverlay');
+
+    if (form) {
+        form.addEventListener('submit', function() {
+            // Mostrar el spinner cuando se envía el formulario
+            spinnerOverlay.style.display = 'flex';
+
+            // Para asegurarse de que el spinner se oculte si hay algún error
+            return true;
+        });
     }
 });

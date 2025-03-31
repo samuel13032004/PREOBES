@@ -35,7 +35,6 @@
                     {% endif %}
                 {% endfor %}
             {% else %}
-                <!-- Respaldo en caso de que la IA no genere recomendaciones -->
                 <p>
                     {% if prediction == "Insufficient_Weight" %}
                         Su peso está por debajo del rango recomendado. Considere consultar con un nutricionista
@@ -64,8 +63,8 @@
         </div>
 
         <div class="actions">
-            <a href="/" class="btn-primary">Realizar otra evaluación</a>
-            <a href="/download-report" class="btn-secondary">Descargar informe PDF</a>
+            <a href="/evolucion-data" class="btn-primary">Volver</a>
+            <a href="/download-report" class="btn-primary">Descargar informe PDF</a>
         </div>
     </div>
 </body>
