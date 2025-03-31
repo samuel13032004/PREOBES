@@ -14,6 +14,9 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
     def index():
         return render_template('login.html')
 
+    @app.route('/inicio')
+    def inicio():
+        return render_template('index.html')
 
     @app.route('/register', methods=['GET', 'POST'])
     def register():
@@ -157,6 +160,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             "imc": "Índice de Masa Corporal (IMC)",
             "prediction": "Niveles de Obesidad",
             "Weight": "Peso (kg)",
+            "Height": "Altura (m)",
             "CH2O": "Consumo de Agua (Litros)",
             "FAF": "Frecuencia de Actividad Física",
             "TUE": "Tiempo de Uso de Tecnologías (TUE)",
