@@ -8,7 +8,7 @@ from datetime import datetime
 from recomendador.recomendador import calcular_edad
 
 
-def create_pdf_report(users_collection,user_data, prediction, imc, probabilities, ai_recommendation):
+def create_pdf_report(users_collection,user_data, prediction, imc, probabilities, ai_recommendation, user_id):
     """
     Crea un informe en PDF con los resultados del análisis y recomendaciones
     Añade iconos y mejora el diseño visual
@@ -49,12 +49,11 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     elements.append(Paragraph("Informe de Evaluación de Riesgo de Obesidad", styles['Title']))
 
     # Título con icono 📊
-    # Cargar la imagen del icono "finance-and-business.png"
-    icon_path = "iconos/finance-and-business.png"  # Ruta de la imagen
+    icon_path = "iconos/finance-and-business.png"
     img = Image(icon_path, width=20, height=20)  # Ajusta el tamaño según sea necesario
 
     # Cargar la imagen del icono "calendar.png"
-    icon_path_calendar = "iconos/calendar.png"  # Ruta de la imagen
+    icon_path_calendar = "iconos/calendar.png"
     img_calendar = Image(icon_path_calendar, width=20, height=20)
 
     # Fecha con icono 📅
@@ -94,8 +93,7 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     prediction_es = prediction_mapping.get(pred_value, pred_value)
 
     # Datos personales con icono 👤
-    # Cargar la imagen del icono "user.png"
-    icon_path_user = "iconos/user.png"  # Ruta de la imagen
+    icon_path_user = "iconos/user.png"
     img_user = Image(icon_path_user, width=20, height=20)  # Ajusta el tamaño según sea necesario
 
     # Título de "Datos personales" con el icono
@@ -113,12 +111,13 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     elements.append(table_user)
     elements.append(Spacer(1, 15))
 
+    existing_user = users_collection.find_one({"user_id": user_id})
     # Convertir datos a formato legible para el informe
-    gender = "Masculino" if user_data.get('Gender') == 'Male' else "Femenino"
+    gender = "Masculino" if existing_user["Gender"] == 'Male' else "Femenino"
     family_history = "Sí" if user_data.get('family_history') == 'yes' else "No"
     favc = "Sí" if user_data.get('FAVC') == 'yes' else "No"
     smoke = "Sí" if user_data.get('SMOKE') == 'yes' else "No"
-    birthdate = user_data.get('birthdate')
+    birthdate = existing_user["birthdate"]
     age = calcular_edad(birthdate) if birthdate else "No especificado"
 
     # Actividad física
@@ -130,7 +129,6 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     }
     physical_activity = faf_mapping.get(user_data.get('FAF', '0'), "No especificado")
 
-    existing_user = users_collection.find_one({"name": user_data.get('Name'), "surname": user_data.get('Surname')})
     user_id = existing_user["user_id"]
     report_number = existing_user["report_count"]
     print(f"ID de usuario: {user_id}")
@@ -138,8 +136,8 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     data = [
         ["ID Usuario", user_id],
         ["NºInforme", report_number],
-        ["Nombre", user_data.get('Name')],
-        ["Apellidos", user_data.get('Surname')],
+        ["Nombre", existing_user["name"]],
+        ["Apellidos", existing_user["surname"]],
         ["Género", gender],
         ["Edad", f"{age} años"],
         ["Altura", f"{user_data.get('Height')} metros"],
@@ -166,8 +164,7 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     elements.append(Spacer(1, 12))
 
     # Resultado de la evaluación con icono 📋
-    # Cargar la imagen del icono "contract.png"
-    icon_path = "iconos/contract.png"  # Ruta de la imagen
+    icon_path = "iconos/contract.png"
     img = Image(icon_path, width=20, height=20)  # Ajusta el tamaño según sea necesario
 
     # Crear la tabla con el icono y el texto "Resultado de la Evaluación"

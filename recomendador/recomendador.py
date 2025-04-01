@@ -13,6 +13,19 @@ def calcular_edad(fecha_nacimiento):
     return edad
 
 
+from datetime import datetime
+
+
+def calcular_edad_en_fecha(birthdate: str, report_date: str) -> int:
+    """ Calcula la edad de una persona en la fecha de un informe. """
+    birth_date = datetime.strptime(birthdate, "%Y-%m-%d")  # Convierte birthdate a objeto datetime
+    report_date = datetime.strptime(report_date, "%Y-%m-%d")  # Convierte report_date a objeto datetime
+
+    edad = report_date.year - birth_date.year - (
+                (report_date.month, report_date.day) < (birth_date.month, birth_date.day))
+    return edad
+
+
 def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_openai):
     """
     Genera recomendaciones personalizadas usando la API de OpenAI
@@ -68,8 +81,10 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
     for report in previous_reports:
         report_number = report['report_number']
         report_date = report['date'].strftime("%Y-%m-%d %H:%M:%S")
+        report_date_2 = report['date'].strftime("%Y-%m-%d")
         report_imc = report['imc']
         report_prediction = report['prediction']
+        report_age = calcular_edad_en_fecha(user_data.get('birthdate'), report_date_2)
 
         # Filtrar los datos personales antes de incluir form_data
         report_form_data = report.get('form_data', {})
@@ -83,6 +98,7 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
         # Construir una cadena con los detalles del reporte
         previous_reports_summary += f"""
 Reporte {report_number} (Fecha: {report_date}):
+- Edad en el informe: {report_age} años
 - IMC: {report_imc}
 - Diagnóstico: {report_prediction}
 - Datos del Formulario: {formatted_form_data}
@@ -174,4 +190,3 @@ Reporte {report_number} (Fecha: {report_date}):
 
         Le recomendamos consultar con un profesional de la salud para obtener orientación específica para su condición.
         """
-

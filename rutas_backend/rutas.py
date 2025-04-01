@@ -189,8 +189,6 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
         """
         Genera y descarga un informe PDF con los resultados de la evaluación
         """
-        # Recuperar los datos de la última predicción
-
         user_id = session.get('user_id')
         if not user_id:
             return "Debes iniciar sesión para descargar el informe.", 401
@@ -217,7 +215,8 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             last_prediction['prediction'],
             last_prediction['imc'],
             last_prediction['probabilities'],
-            last_prediction['ai_recommendation']
+            last_prediction['ai_recommendation'],
+            user_id
         )
 
         # Generar un nombre de archivo con la fecha actual
@@ -254,7 +253,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
 
         # Asegurarse de que todos los campos necesarios existen
         required_fields = [
-            'Gender', 'Age', 'Height', 'Weight', 'family_history', 'FAVC',
+            'Gender', 'Height', 'Weight', 'family_history', 'FAVC',
             'FCVC', 'NCP', 'CAEC', 'SMOKE', 'CH2O', 'SCC', 'FAF',
             'TUE', 'CALC', 'MTRANS'
         ]
@@ -262,7 +261,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
         for field in required_fields:
             if field not in form_data:
                 # Valores predeterminados apropiados para cada campo
-                if field in ['Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']:
+                if field in ['Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']:
                     form_data[field] = '0'  # Valores numéricos como string
                 else:
                     form_data[field] = 'no'  # Valores categóricos
@@ -271,7 +270,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
         input_df = pd.DataFrame([form_data])
 
         # Convertir los campos numéricos conocidos a valores numéricos
-        numeric_cols = ['Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
+        numeric_cols = ['Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
         for col in numeric_cols:
             if col in input_df.columns:
                 input_df[col] = pd.to_numeric(input_df[col], errors='coerce')
@@ -312,8 +311,6 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
         ai_recommendation = get_ai_recommendation(form_data, pred_label, imc_value,reports_collection,token_openai)
 
         # Guardar los datos de la sesión para la descarga del PDF
-        # Esto normalmente se haría con una base de datos o sesiones,
-        # pero para simplificar usaremos variables globales
         app.config['LAST_PREDICTION'] = {
             'form_data': form_data,
             'prediction': pred_label,
@@ -322,6 +319,11 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             'ai_recommendation': ai_recommendation
         }
 
+        filtered_form_data = form_data.copy()
+        personal_fields = ['user_id', 'Name', 'Surname', 'birthdate', 'Gender']
+        for field in personal_fields:
+            if field in filtered_form_data:
+                filtered_form_data.pop(field)
         # Guardar en la BD el informe del usuario
         report_entry = {
             "user_id": user_id,
@@ -330,7 +332,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             "imc": imc_value,
             "prediction": pred_label,
             "probabilities": {le.inverse_transform([i])[0]: round(prob * 100, 2) for i, prob in enumerate(pred_proba)},
-            "form_data": form_data  # Guardar todos los datos del usuario en el informe
+            "form_data": filtered_form_data
         }
         reports_collection.insert_one(report_entry)
 
@@ -340,7 +342,8 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             pred_label,
             imc_value,
             sorted_probabilities,
-            ai_recommendation
+            ai_recommendation,
+            user_id
         )
 
         # Crear carpeta si no existe

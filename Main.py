@@ -123,8 +123,7 @@ def inicializar_modelos():
 
     # Siempre preguntar al usuario, pero solo la primera vez que se ejecuta el script
     if os.environ.get("FLASK_RUN_FROM_CLI") != "false":  # Solo para la primera ejecución
-        # Obtener la última decisión si existe
-        ultima_decision = obtener_ultima_decision()
+        obtener_ultima_decision()
 
         # Si no hay decisión guardada o queremos preguntar cada vez, pedimos input
         ejecutar_analisis = input("¿Desea ejecutar el análisis de datos? (s/n): ").lower()
@@ -135,6 +134,8 @@ def inicializar_modelos():
         if ejecutar_analisis == 's':
             print("Iniciando análisis de datos...")
             modelo, scaler, le, model_columns = realizar_analisis()
+            guardar_decision("n")
+
         else:
             try:
                 modelo, scaler, le, model_columns = cargar_modelos()
@@ -144,6 +145,7 @@ def inicializar_modelos():
                 exit(1)
     else:
         # Para los reinicios, usar la última decisión guardada
+        guardar_decision("n")
         ultima_decision = obtener_ultima_decision()
         if ultima_decision == 's':
             try:
