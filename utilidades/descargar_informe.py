@@ -5,7 +5,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from io import BytesIO
 from datetime import datetime
-from recomendador.recomendador import calcular_edad
+from recomendador.recomendador_openai import calcular_edad
 
 
 def create_pdf_report(users_collection,user_data, prediction, imc, probabilities, ai_recommendation, user_id):

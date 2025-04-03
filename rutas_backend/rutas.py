@@ -4,7 +4,7 @@ from flask import render_template, request, redirect, url_for, session, flash, j
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
 from datetime import datetime
-from recomendador.recomendador import get_ai_recommendation
+from recomendador.recomendador_openai import get_ai_recommendation
 from utilidades.descargar_informe import create_pdf_report
 
 
