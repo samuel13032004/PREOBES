@@ -1,5 +1,10 @@
+import hashlib
 import os
+import secrets
+import smtplib
+from email.mime.text import MIMEText
 
+import bcrypt
 from flask import render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import pandas as pd
@@ -7,6 +12,8 @@ from datetime import datetime
 from recomendador.recomendador_openai import get_ai_recommendation
 from utilidades.descargar_informe import create_pdf_report
 
+import sendgrid
+from sendgrid.helpers.mail import Mail, Email, To, Content
 
 def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users_collection, reports_collection,
                                    token_openai):
@@ -27,12 +34,18 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             surname = request.form['surname']
             Gender = request.form['Gender']
             birthdate = request.form['birthdate']
+            email = request.form['email']  # Capturar el correo
+
             # Check if user already exists
             existing_user = users_collection.find_one({"username": username})
             if existing_user:
                 flash('Username already exists. Please choose another.', 'error')
                 return redirect(url_for('register'))
 
+            existing_email = users_collection.find_one({"email": email})
+            if existing_email:
+                flash('Este correo ya está registrado.', 'error')
+                return redirect(url_for('register'))
             # Generate a unique user ID
             last_user = users_collection.find_one(sort=[("user_id", -1)])
             user_id = (last_user["user_id"] + 1) if last_user else 1000
@@ -49,6 +62,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
                 "surname": surname,
                 "Gender": Gender,
                 "birthdate": birthdate,
+                "email": email,
                 "report_count": 0,
                 "created_at": datetime.now()
             }
@@ -71,7 +85,7 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             # Find user
             user = users_collection.find_one({"username": username})
 
-            if user and check_password_hash(user['password'], password):
+            if user and bcrypt.checkpw(password.encode(), user['password']):
                 # Create session
                 session['user_id'] = user['user_id']
                 session['username'] = user['username']
@@ -399,3 +413,76 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
             user_reports.sort(key=lambda x: x['filename'], reverse=True)
 
         return jsonify({"reports": user_reports})
+
+    from flask import request
+    import uuid, datetime
+
+    @app.route('/forgot_password', methods=['GET', 'POST'])
+    def forgot_password():
+        if request.method == 'POST':
+            username = request.form['username']
+            user = users_collection.find_one({"username": username})
+
+            if user:
+                token = str(uuid.uuid4())
+                users_collection.update_one(
+                    {"user_id": user['user_id']},
+                    {"$set": {"reset_token": token}}
+                )
+                enlace = url_for('reset_password', username=username, _external=True)
+                enviar_correo(user['email'], enlace)
+                flash("📩 Correo enviado con éxito. ¡Revisa tu bandeja de entrada y la carpeta de spam!", "success")
+                return redirect(url_for('login'))
+            else:
+                flash('Usuario no encontrado.', 'danger')
+        return render_template('forgot_password.html')
+
+    # Ruta para restablecer contraseña
+    @app.route('/reset_password/<username>', methods=['GET', 'POST'])
+    def reset_password(username):
+        user = users_collection.find_one({"username": username})
+
+        if not user or 'reset_token' not in user:
+            return "Token inválido o expirado."
+
+        if request.method == 'POST':
+            nueva_password = request.form['password']
+
+            # Generar un salt y el hash de la nueva contraseña
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(nueva_password.encode(), salt)
+
+            # Actualizar la contraseña en la base de datos
+            users_collection.update_one(
+                {"user_id": user['user_id']},
+                {"$set": {"password": hashed_password}, "$unset": {"reset_token": ""}}
+            )
+            flash('Contraseña actualizada correctamente.', 'success')
+            return redirect(url_for('login'))
+
+        return render_template('reset_password.html', username=username)
+
+    def enviar_correo(destinatario, enlace):
+        remitente = "terabytetitans@gmail.com"
+        app_password = "wnhm ozuw uuym prnm"
+
+        cuerpo = f"""
+        ¡Hola! 👋
+
+        Recibimos una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:
+
+        🔗 {enlace}
+
+        Este enlace expirará en 1 hora. Si no solicitaste este cambio, ignora este mensaje.
+
+        - El equipo de PREOBES 💻
+        """
+
+        msg = MIMEText(cuerpo, _charset="utf-8")
+        msg['Subject'] = '🔒 Recupera tu contraseña'
+        msg['From'] = remitente
+        msg['To'] = destinatario
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(remitente, app_password)
+            server.sendmail(remitente, destinatario, msg.as_string())
