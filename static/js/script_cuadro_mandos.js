@@ -651,5 +651,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+const ctx = document.getElementById('edadPesoChart').getContext('2d');
 
+  const data = {
+    labels: ['14-20', '21-30', '31-40', '41-50', '51-61'],
+    datasets: [
+      {
+        label: 'Peso insuficiente',
+        data: [0.307, 0.067, 0.011, 0.000, 0.000],
+        backgroundColor: '#FF6F61'
+      },
+      {
+        label: 'Peso normal',
+        data: [0.212, 0.119, 0.057, 0.000, 0.200],
+        backgroundColor: '#6B8E23'
+      },
+      {
+        label: 'Sobrepeso nivel I',
+        data: [0.154, 0.131, 0.139, 0.048, 0.100],
+        backgroundColor: '#87CEFA'
+      },
+      {
+        label: 'Sobrepeso nivel II',
+        data: [0.100, 0.117, 0.274, 0.238, 0.600],
+        backgroundColor: '#32CD32'
+      },
+      {
+        label: 'Obesidad tipo I',
+        data: [0.129, 0.161, 0.224, 0.500, 0.100],
+        backgroundColor: '#FFD700'
+      },
+      {
+        label: 'Obesidad tipo II',
+        data: [0.011, 0.171, 0.295, 0.214, 0.000],
+        backgroundColor: '#FF4500'
+      },
+      {
+        label: 'Obesidad tipo III',
+        data: [0.087, 0.234, 0.000, 0.000, 0.000],
+        backgroundColor: '#8B0000'  // Rojo oscuro
+      }
+    ]
+  };
 
+  new Chart(ctx, {
+    type: 'bar',
+    data: data,
+    options: {
+      indexAxis: 'y', // Barras horizontales
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'right'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${(context.raw * 100).toFixed(1)}%`;
+            }
+          }
+        },
+        title: {
+          display: true,
+          text: 'Distribución proporcional por grupo de edad y tipo de peso'
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          max: 1,
+          ticks: {
+            callback: function(value) {
+              return `${(value * 100).toFixed(0)}%`;
+            }
+          }
+        },
+        y: {
+          stacked: true
+        }
+      }
+    }
+  });
