@@ -18,7 +18,6 @@ def analizar_importancia(X, y):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # Dividir los datos en conjunto de entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
     # Modelo de Random Forest para análisis de importancia
@@ -31,17 +30,14 @@ def analizar_importancia(X, y):
     feature_importances = model.feature_importances_
     feature_importance_df = pd.DataFrame(feature_importances, index=X.columns, columns=["Importancia"])
 
-    # Normalizar importancias para que sumen 1
+    # Normalizar importancias para que sumen 1 y ordenarlas
     feature_importance_df["Importancia"] /= feature_importance_df["Importancia"].sum()
-
-    # Ordenar importancias
     feature_importance_df = feature_importance_df.sort_values("Importancia", ascending=False)
 
     # Mostrar importancia de las variables
     print("Importancia de las variables (normalizadas para sumar 1):")
     print(feature_importance_df)
 
-    # Gráfico de barras con leyenda
     plt.figure(figsize=(10, 6))
     sns.barplot(x="Importancia", y=feature_importance_df.index, hue=feature_importance_df.index, legend=False,
                 palette="viridis", data=feature_importance_df)

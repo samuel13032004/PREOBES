@@ -50,14 +50,12 @@ def analizar_factores_obesidad(X, y):
             columns=["Importancia"]
         )
 
-    # Normalizar importancias para que sumen 1
+    # Normalizar importancias para que sumen 1 y ordenarlas
     feature_importance_df["Importancia"] /= feature_importance_df["Importancia"].sum()
-
     feature_importance_df = feature_importance_df.sort_values("Importancia", ascending=False)
 
     # Clasificar variables como modificables o no modificables
     no_modificables = ['Gender', 'Age', 'Height', 'family_history_with_overweight']
-
     modificables = [col for col in feature_importance_df.index if col not in no_modificables]
 
     # Filtrar solo las variables modificables y no modificables que están presentes en el índice
@@ -69,14 +67,9 @@ def analizar_factores_obesidad(X, y):
         [col for col in no_modificables if col in feature_importance_df.index]
     ]
 
-    print("\nSuma total de factores modificables:", df_modificables["Importancia"].sum())
-
     df_modificables_normalizado = df_modificables.copy()
     # **Normalizar solo las importancias de las variables modificables** para que sumen exactamente 1
     df_modificables_normalizado["Importancia"] /= df_modificables_normalizado["Importancia"].sum()
-
-    # **Verificar que la suma es exactamente 1**
-    print("\nSuma total de factores modificables:", df_modificables["Importancia"].sum())
 
     # Mostrar importancia de las variables modificables
     print("\n=== FACTORES QUE EL USUARIO PUEDE CONTROLAR ===")
@@ -127,3 +120,46 @@ def analizar_factores_obesidad(X, y):
         'modelo': model,
         'scaler': scaler
     }
+
+
+def analizar_peso_por_edad(df):
+    """
+    Divide las edades en grupos, calcula la distribución de tipos de peso (NObeyesdad)
+    y genera un gráfico de barras horizontales comparando los grupos de edad.
+
+    Args:
+        df (DataFrame): Dataset con columnas 'Age' y 'NObeyesdad'
+    """
+
+    # Verificar que estén las columnas necesarias
+    if 'Age' not in df.columns or 'NObeyesdad' not in df.columns:
+        print("Error: el DataFrame debe contener las columnas 'Age' y 'NObeyesdad'.")
+        return
+
+    # 1. Crear grupos de edad
+    bins = [14, 20, 30, 40, 50, 61]
+    labels = ['14-20', '21-30', '31-40', '41-50', '51-61']
+    df['Grupo_Edad'] = pd.cut(df['Age'], bins=bins, labels=labels, include_lowest=True)
+
+    # 2. Calcular proporciones por grupo de edad
+    distribucion = df.groupby(['Grupo_Edad', 'NObeyesdad']).size().unstack().fillna(0)
+    proporciones = distribucion.div(distribucion.sum(axis=1), axis=0)
+
+    # 3. Mostrar valores
+    print("\n📊 Cantidad de usuarios por grupo de edad y tipo de peso:")
+    print(distribucion)
+
+    print("\n📈 Proporciones por grupo de edad (0 a 1):")
+    print(proporciones)
+
+    # 3. Gráfico de barras horizontales
+    proporciones.plot(kind='barh', stacked=True, figsize=(10, 6), colormap='tab20')
+    plt.title('Distribución de Tipos de Peso por Grupo de Edad')
+    plt.xlabel('Proporción')
+    plt.ylabel('Grupo de Edad')
+    plt.legend(title='Tipo de Peso', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.grid(axis='x', linestyle='--', alpha=0.6)
+    plt.savefig('graficos/analisis_pesos_sectores_edad.png')
+    plt.show()
+    plt.close()

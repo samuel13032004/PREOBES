@@ -115,23 +115,67 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     # Convertir datos a formato legible para el informe
     gender = "Masculino" if existing_user["Gender"] == 'Male' else "Femenino"
     family_history = "Sí" if user_data.get('family_history') == 'yes' else "No"
+    scc = "Sí" if user_data.get('SCC') == 'yes' else "No"
     favc = "Sí" if user_data.get('FAVC') == 'yes' else "No"
     smoke = "Sí" if user_data.get('SMOKE') == 'yes' else "No"
     birthdate = existing_user["birthdate"]
     age = calcular_edad(birthdate) if birthdate else "No especificado"
+    ncp = user_data.get("NCP")
+    ch2o = user_data.get("CH2O")
+    tue = user_data.get("TUE")
 
     # Actividad física
     faf_mapping = {
         "0": "Sedentario",
         "1": "Ligero",
         "2": "Moderado",
-        "3": "Intenso"
+        "3": "Intenso",
+        "4": "Muy Intenso"
     }
+
+    # Mapeos
+    caec_mapping = {
+        'Sometimes': 'A veces',
+        'Frequently': 'Frecuentemente',
+        'Always': 'Siempre',
+        'no': 'No'
+    }
+
+
+    calc_mapping = {
+        'no': 'No',
+        'Sometimes': 'A veces',
+        'Frequently': 'Frecuentemente',
+        'Always': 'Siempre'
+    }
+
+    fcvc_mapping = {
+        '1': 'Bajo consumo',
+        '2': 'Consumo moderado',
+        '3': 'Alto consumo'
+    }
+    mtrans_mapping = {
+        'Public_Transportation': 'Transporte público',
+        'Walking': 'Caminando',
+        'Automobile': 'Automóvil',
+        'Motorbike': 'Motocicleta',
+        'Bike': 'Bicicleta'
+    }
+
+    # Ejemplo de cómo capturar el valor mapeado
+
+    # Ejemplo de cómo capturar el valor mapeado
+    fcvc = fcvc_mapping.get(user_data.get('FCVC', '1'), "No especificado")
     physical_activity = faf_mapping.get(user_data.get('FAF', '0'), "No especificado")
+    caec = caec_mapping.get(user_data.get('CAEC', 'no'), "No especificado")
+    calc = calc_mapping.get(user_data.get('CALC', 'no'), "No especificado")
+    mtrans = mtrans_mapping.get(user_data.get('MTRANS', 'Public_Transportation'), "No especificado")
 
     user_id = existing_user["user_id"]
     report_number = existing_user["report_count"]
     print(f"ID de usuario: {user_id}")
+
+
     # Tabla de datos personales
     data = [
         ["ID Usuario", user_id],
@@ -144,9 +188,18 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
         ["Peso", f"{user_data.get('Weight')} kg"],
         ["IMC", f"{imc}"],
         ["Historial familiar de obesidad", family_history],
+        ["Sedentario", scc],
+        ["Nivel de actividad física", physical_activity],
         ["Consumo frecuente de calorías", favc],
+        ["NºComidas Principales", ncp],
+        ["Consumo alimentos entre comidas", caec],
+        ["Frecuencia Consumo Verduras", fcvc],
+        ["Consumo de Agua ", f"{ch2o} Litros"],
         ["Fumador", smoke],
-        ["Nivel de actividad física", physical_activity]
+        ["Consumo de Alcohol", calc],
+        ["Tiempo de Uso de Tecnologias", tue],
+        ["Modo de Transporte", mtrans],
+
     ]
 
     t = Table(data, colWidths=[200, 200])
@@ -183,6 +236,7 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     elements.append(Spacer(1, 12))
     elements.append(Paragraph(f"Su nivel de riesgo es: <b>{prediction_es}</b>", styles['CustomNormal']))
     elements.append(Paragraph(f"Índice de Masa Corporal (IMC): <b>{imc}</b>", styles['CustomNormal']))
+
 
     icon_path = "iconos/finance-and-business.png"  # Ruta de la imagen
     img = Image(icon_path, width=20, height=20)  # Ajusta el tamaño según sea necesario

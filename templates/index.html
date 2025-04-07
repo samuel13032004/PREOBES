@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos_cuadro_mandos.css') }}">
 </head>
 <body>
@@ -16,6 +17,10 @@
             <h1>Evaluación de Riesgo de Obesidad</h1>
             <p class="subtitle">Evalúe su riesgo de obesidad basado en hábitos y características personales</p>
         </header>
+        <div class="user-badge" title="@{{ session['username']|capitalize }}">
+            {{ session['username'][0]|upper }}
+        </div>
+
         <div class="tabs">
             <button class="tab active" onclick="openTab('form')">
                 <i class="fas fa-clipboard-list"></i> Formulario

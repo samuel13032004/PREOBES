@@ -9,7 +9,7 @@ from utilidades.modelos import cargar_modelos
 from analisis_variables.analisis_importancia_clasificacion import analizar_importancia
 from correlaciones.analisis_relaciones import analisis_completo_neo4j, crear_matriz_correlacion
 from entrenamiento_modelo.clasificacion import entrenar_modelo, predecir
-from analisis_variables.analisis_factores import analizar_factores_obesidad
+from analisis_variables.analisis_factores import analizar_factores_obesidad, analizar_peso_por_edad
 
 # Archivo para almacenar la última decisión de ejecutar el análisis
 CONFIG_FILE = '.analysis_config'
@@ -78,6 +78,7 @@ def realizar_analisis():
 
     print("\n4. ANALIZANDO FACTORES DE OBESIDAD...")
     try:
+        analizar_peso_por_edad(df)
         resultados_analisis = analizar_factores_obesidad(X, y)
         print(f"✓ Análisis de factores de obesidad completado")
         factores_modificables = resultados_analisis['factores_modificables']

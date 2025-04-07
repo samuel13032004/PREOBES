@@ -30,8 +30,8 @@ def cargar_datos():
     # print(df.head())
 
     #print("\nValores únicos para variables categóricas:")
-    # for col in df.select_dtypes(include=['object']).columns:
-    #  print(f"{col}: {df[col].unique()}")
+    #for col in df.select_dtypes(include=['object']).columns:
+      #print(f"{col}: {df[col].unique()}")
 
     # Convertir variables categóricas en variables numéricas
     categorical_columns = ['Gender', 'family_history_with_overweight', 'FAVC', 'CAEC',
