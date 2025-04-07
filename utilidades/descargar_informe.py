@@ -1,6 +1,6 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from io import BytesIO
@@ -124,7 +124,6 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     ch2o = user_data.get("CH2O")
     tue = user_data.get("TUE")
 
-    # Actividad física
     faf_mapping = {
         "0": "Sedentario",
         "1": "Ligero",
@@ -133,7 +132,6 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
         "4": "Muy Intenso"
     }
 
-    # Mapeos
     caec_mapping = {
         'Sometimes': 'A veces',
         'Frequently': 'Frecuentemente',
@@ -162,9 +160,6 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
         'Bike': 'Bicicleta'
     }
 
-    # Ejemplo de cómo capturar el valor mapeado
-
-    # Ejemplo de cómo capturar el valor mapeado
     fcvc = fcvc_mapping.get(user_data.get('FCVC', '1'), "No especificado")
     physical_activity = faf_mapping.get(user_data.get('FAF', '0'), "No especificado")
     caec = caec_mapping.get(user_data.get('CAEC', 'no'), "No especificado")
@@ -237,6 +232,8 @@ def create_pdf_report(users_collection,user_data, prediction, imc, probabilities
     elements.append(Paragraph(f"Su nivel de riesgo es: <b>{prediction_es}</b>", styles['CustomNormal']))
     elements.append(Paragraph(f"Índice de Masa Corporal (IMC): <b>{imc}</b>", styles['CustomNormal']))
 
+    # Salto de página antes del desglose
+    elements.append(PageBreak())
 
     icon_path = "iconos/finance-and-business.png"  # Ruta de la imagen
     img = Image(icon_path, width=20, height=20)  # Ajusta el tamaño según sea necesario

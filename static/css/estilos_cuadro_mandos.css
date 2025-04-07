@@ -499,3 +499,40 @@ body {
     .user-badge:hover {
         background-color: #353b48;
     }
+
+
+
+    .bloque-correlaciones {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.tarjeta-estadistica {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.3s;
+    width: 100%;
+}
+
+.tarjeta-estadistica:hover {
+    transform: translateY(-5px);
+}
+
+.tarjeta-estadistica h3 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.tarjeta-estadistica p {
+    opacity: 0.8;
+    font-size: 0.9em;
+}
+
+.tarjeta-estadistica strong {
+    color: var(--secondary-color);
+    font-size: 1.1em;
+}
