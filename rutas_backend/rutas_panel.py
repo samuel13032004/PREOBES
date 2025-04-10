@@ -1,7 +1,9 @@
+import pandas as pd
 from flask import render_template, session, redirect, url_for, flash, request, jsonify
+from pymongo import MongoClient
 
 
-def setup_dashboard_routes(app, users_collection, reports_collection):
+def setup_dashboard_routes(app, db_collection, users_collection, reports_collection):
     @app.route('/inicio')
     def inicio():
         if 'user_id' not in session:
@@ -131,3 +133,71 @@ def setup_dashboard_routes(app, users_collection, reports_collection):
             user_reports.sort(key=lambda x: x['filename'], reverse=True)
 
         return jsonify({"reports": user_reports})
+
+    @app.route("/proporciones/<variable>")
+    def obtener_proporciones(variable):
+        datos = list(db_collection.find({}, {"_id": 0}))
+        df = pd.DataFrame(datos)
+
+        # Convertir edad a numérico
+        df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
+        df.dropna(subset=['Age'], inplace=True)
+
+        # Crear grupos de edad
+        bins = [14, 20, 30, 40, 50, 61]
+        labels = ['14-20', '21-30', '31-40', '41-50', '51-61']
+        df['Grupo_Edad'] = pd.cut(df['Age'], bins=bins, labels=labels, include_lowest=True)
+
+        if variable not in df.columns:
+            return jsonify({"error": f"La variable '{variable}' no está disponible."}), 404
+
+        # Diccionario de traducción
+        traducciones = {
+            "yes": "Sí",
+            "no": "No",
+            "Female": "Mujer",
+            "Male": "Hombre",
+            "Always": "Siempre",
+            "Frequently": "Frecuentemente",
+            "Sometimes": "A veces",
+            "Automobile": "Automóvil",
+            "Motorbike": "Moto",
+            "Public_Transportation": "Transporte público",
+            "Walking": "Caminar",
+            "Insufficient_Weight": "Peso insuficiente",
+            "Normal_Weight": "Peso normal",
+            "Overweight_Level_I": "Sobrepeso nivel I",
+            "Overweight_Level_II": "Sobrepeso nivel II",
+            "Obesity_Type_I": "Obesidad tipo I",
+            "Obesity_Type_II": "Obesidad tipo II",
+            "Obesity_Type_III": "Obesidad tipo III"
+        }
+
+        # Calcular proporciones
+        distribucion = df.groupby(['Grupo_Edad', variable]).size().unstack().fillna(0)
+
+        # Aplicar traducciones a las columnas
+        distribucion.columns = [traducciones.get(str(col), str(col)) for col in distribucion.columns]
+
+        proporciones = distribucion.div(distribucion.sum(axis=1), axis=0)
+
+        # Colores para cada categoría
+        colores = [
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+            "#9966FF", "#FF9F40", "#C9CBCF", "#8AFFC1",
+            "#A569BD", "#58D68D", "#F4D03F", "#DC7633"
+        ]
+
+        # Formato para Chart.js
+        resultado = {
+            "labels": list(proporciones.index.astype(str)),
+            "datasets": [
+                {
+                    "label": str(col),
+                    "data": list(proporciones[col]),
+                    "backgroundColor": colores[i % len(colores)]
+                } for i, col in enumerate(proporciones.columns)
+            ]
+        }
+
+        return jsonify(resultado)

@@ -95,6 +95,8 @@ def cargar_datos_mongo(client):
 
     ensure_collections()
 
+    db_collection = db["ObesityDataSet"]
+
     users_collection = db["users"]
     reports_collection = db["reports"]
-    return db, users_collection, reports_collection
+    return db, db_collection,users_collection, reports_collection

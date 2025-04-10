@@ -26,10 +26,25 @@
                 <h3>Distribución de Riesgo por Factores</h3>
                 <canvas id="riskDistributionChart"></canvas>
             </div>
+
             <div class="chart-container">
-              <h3>Proporciones por Grupo de Edad </h3>
-              <canvas id="edadPesoChart"></canvas>
+              <h3>Distribución proporcional por grupo de edad</h3>
+              <label for="categoriaSelect"><strong>Selecciona una variable:</strong></label>
+              <select id="categoriaSelect">
+                <option value="Gender">Género</option>
+                <option value="NObeyesdad">Tipo de obesidad</option>
+                <option value="family_history_with_overweight">Historial Familiar</option>
+                <option value="FAVC">Consumo Alimentos Altos en Calorias</option>
+                <option value="CAEC">Consumo de alimentos entre comidas</option>
+                <option value="CALC">Consumo Alcohol</option>
+                <option value="MTRANS">Medio de Transporte</option>
+                <option value="SMOKE">Fumar</option>
+                <option value="SCC">Sedentarismo</option>
+                <option value="FAF">Frecuencia Actividad Física</option>
+              </select>
+              <canvas id="categoriaEdadChart"></canvas>
             </div>
+
         </div>
     </div>
 

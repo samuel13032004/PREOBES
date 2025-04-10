@@ -4,7 +4,7 @@ from rutas_backend.rutas_informe import setup_report_routes
 from rutas_backend.rutas_prediccion import setup_prediction_routes
 
 
-def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users_collection, reports_collection,
+def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, db_collection,users_collection, reports_collection,
                                    token_openai):
     """
     Configura todas las rutas de la aplicación
@@ -24,6 +24,6 @@ def configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, users
 
     # Configurar cada grupo de rutas
     setup_auth_routes(app, users_collection)
-    setup_dashboard_routes(app, users_collection, reports_collection)
+    setup_dashboard_routes(app, db_collection, users_collection, reports_collection)
     setup_report_routes(app, users_collection)
     setup_prediction_routes(app, modelo, scaler, le, model_columns, users_collection, reports_collection, token_openai)

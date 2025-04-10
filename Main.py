@@ -179,8 +179,8 @@ if __name__ == '__main__':
     # Inicializar conexiones y configurar rutas
     token_openai = os.getenv("apikey")
     client = pymongo.MongoClient("mongodb://localhost:27017/")
-    db, users_collection, reports_collection = cargar_datos_mongo(client)
-    configurar_rutas_configuracion(app, modelo, scaler, le, model_columns,
+    db, db_collection, users_collection, reports_collection = cargar_datos_mongo(client)
+    configurar_rutas_configuracion(app, modelo, scaler, le, model_columns,db_collection,
                                    users_collection, reports_collection, token_openai)
 
     print("✓ Iniciando servidor Flask...")
