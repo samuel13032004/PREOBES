@@ -1,6 +1,6 @@
-from datetime import datetime
+import requests
 from flask import session
-from openai import OpenAI
+from datetime import datetime
 
 
 def calcular_edad(fecha_nacimiento):
@@ -11,9 +11,6 @@ def calcular_edad(fecha_nacimiento):
     hoy = datetime.today()
     edad = hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
     return edad
-
-
-from datetime import datetime
 
 
 def calcular_edad_en_fecha(birthdate: str, report_date: str) -> int:
@@ -118,8 +115,8 @@ Reporte {report_number} (Fecha: {report_date}):
     prediction_es = prediction_mapping.get(prediction, prediction)
 
     prompt = f"""
-    Actúa como un experto nutricionista y entrenador personal. Genera recomendaciones personalizadas para una persona 
-    con las siguientes características:
+    Eres un experto nutricionista y entrenador personal español. Genera recomendaciones personalizadas 
+    para una persona con las siguientes características:
 
     Datos Personales:
     - Género: {gender}
@@ -134,70 +131,54 @@ Reporte {report_number} (Fecha: {report_date}):
     - Fumador: {smoke}
     - Nivel de actividad física (0-4, donde 0 es sedentario y 4 es muy activo): {physical_activity}
     - Consumo de agua diario: {water_consumption} litros
-    - Frecuencia de consumo de vegetales: {vegetable_frequency}
+    - Frecuencia de consumo de vegetales (ten en cuenta que 1 es el mínimo y 3 el máximo): {vegetable_frequency}
     - Número de comidas por día: {meal_frequency}
     - Consumo de alcohol: {alcohol_consumption}
-    - Tiempo de uso de tecnología: {tech_usage_time}
+    - Tiempo de uso de tecnología (horas al día): {tech_usage_time}
     - Medio de transporte principal: {transport_method}
     - Control de calorías: {calorie_control}
 
     El diagnóstico actual de esta persona es: {prediction_es}
     """
 
-    if len(previous_reports_summary) > 0:
-        prompt += f"""
-        Informes Previos:
-        {previous_reports_summary}
-    """
-
     prompt += f"""
-    Proporciona recomendaciones personalizadas basadas en el informe más reciente rellenado por el usuario en 3-4 
-    párrafos que incluyan:
+    Proporciona recomendaciones personalizadas (CRÍTICO: No numeres los párrafos en la respuesta) basadas en el informe 
+    más reciente rellenado por el usuario en 3-4 párrafos separados por saltos de líneas que incluyan:
     1. Una explicación breve y clara de lo que significa su categoría de peso.
-    2. Consejos de alimentación específicos.
-    3. Recomendaciones de actividad física apropiadas.
-    4. Cambios de hábitos que podrían beneficiarle.
-
-    Por último, analiza la evolución del usuario comparando sus datos actuales con los informes previos. 
-    Evalúa si ha mejorado sus hábitos o si algunos se han empeorado, y destaca aquellos hábitos que necesitan atención 
-    o cambio para mejorar su salud. Si la evolución ha sido 
-    favorable, felicita al usuario resaltando sus logros y mejoras; si ha sido desfavorable, proporciona comentarios 
-    constructivos y sugerencias para mejorar, siempre en un tono respetuoso y profesional. 
+    2. Consejos de alimentación específicos, resaltando los buenos hábitos alimenticios en caso de tenerlos.
+    3. Recomendaciones de actividad física apropiadas, resaltando los buenos hábitos en caso de haberlos.
+    4. Cambios de hábitos que podrían beneficiarle (en caso de que hayan). 
 
     Usa un tono profesional pero amigable. Las recomendaciones deben ser realistas y específicas para su condición.
     """
 
-    print(prompt)
-    client = OpenAI(api_key=token_openai)
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "Eres un asistente especializado en nutrición y salud."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=1500,
-            temperature=0.2,
-            stream=True
-        )
+    if len(previous_reports_summary) > 0:
+        prompt += f"""
+        Informes Previos:
+        {previous_reports_summary}
 
-        print("\nGenerando recomendación...\n")
-        recomendacion_completa = ""
-        for chunk in response:
-            if chunk.choices[0].delta.content:
-                content_chunk = chunk.choices[0].delta.content
-                recomendacion_completa += content_chunk
-                print(content_chunk, end="", flush=True)
-
-        recommendation = recomendacion_completa.strip()
-        return recommendation
-
-    except Exception as e:
-        print(f"Error al llamar a la API de OpenAI: {e}")
-        return f"""
-        Lo sentimos, no pudimos generar recomendaciones personalizadas en este momento.
-
-        Su diagnóstico es {prediction_es} con un IMC de {imc}.
-
-        Le recomendamos consultar con un profesional de la salud para obtener orientación específica para su condición.
+        Por último, analiza la evolución del usuario comparando sus datos actuales con los informes previos. 
+        Evalúa si ha mejorado sus hábitos o si algunos se han empeorado, y destaca aquellos hábitos que necesitan 
+        atención o cambio para mejorar su salud. Si la evolución ha sido 
+        favorable, felicita al usuario resaltando sus logros y mejoras; si ha sido desfavorable, proporciona comentarios 
+        constructivos y sugerencias para mejorar, siempre en un tono respetuoso y profesional.
         """
+
+    print(prompt)
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "gemma3",
+            "prompt": prompt,
+            "temperature": 0.2,
+            "stream": False
+        }
+    )
+
+    if response.status_code == 200:
+        contenido = response.json()["response"].strip()
+        print(contenido)
+        return contenido
+    else:
+        print("Error al generar la recomendación:", response.status_code, response.text)
+        return None

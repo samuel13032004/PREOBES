@@ -16,7 +16,25 @@
 
         <div class="result-card">
             <h2>Su nivel de riesgo es:</h2>
-            <div class="result-value">{{ prediction }}</div>
+            <div class="result-value">
+                {% if prediction == "Insufficient_Weight" %}
+                    Peso Insuficiente
+                {% elif prediction == "Normal_Weight" %}
+                    Peso Normal
+                {% elif prediction == "Overweight_Level_I" %}
+                    Sobrepeso Nivel I
+                {% elif prediction == "Overweight_Level_II" %}
+                    Sobrepeso Nivel II
+                {% elif prediction == "Obesity_Type_I" %}
+                    Obesidad Tipo I
+                {% elif prediction == "Obesity_Type_II" %}
+                    Obesidad Tipo II
+                {% elif prediction == "Obesity_Type_III" %}
+                    Obesidad Tipo III
+                {% else %}
+                    {{ prediction }}
+                {% endif %}
+            </div>
             <p class="result-description">
                 Este resultado se basa en los datos proporcionados sobre sus características personales,
                 hábitos alimenticios y estilo de vida.
