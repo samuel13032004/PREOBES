@@ -162,6 +162,7 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
             "Sometimes": "A veces",
             "Automobile": "Automóvil",
             "Motorbike": "Moto",
+            "Bike" : "Bicicleta",
             "Public_Transportation": "Transporte público",
             "Walking": "Caminar",
             "Insufficient_Weight": "Peso insuficiente",

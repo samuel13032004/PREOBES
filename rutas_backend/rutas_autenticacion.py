@@ -29,12 +29,12 @@ def setup_auth_routes(app, users_collection):
             if existing_user:
                 flash('Username already exists. Please choose another.', 'error')
                 return redirect(url_for('register'))
-
+            """ 
             existing_email = users_collection.find_one({"email": email})
             if existing_email:
                 flash('Este correo ya está registrado.', 'error')
                 return redirect(url_for('register'))
-
+            """
             # Generate a unique user ID
             last_user = users_collection.find_one(sort=[("user_id", -1)])
             user_id = (last_user["user_id"] + 1) if last_user else 1000
