@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -36,8 +35,8 @@ def analizar_factores_obesidad(X, y):
 
     if len(feature_importances) != len(original_columns):
         print(
-            f"ADVERTENCIA: Discrepancia en dimensiones. Features: {len(feature_importances)}, Columnas: {len(original_columns)}")
-        # Si hay discrepancia, usar solo las primeras n características
+            f"ADVERTENCIA: Discrepancia en dimensiones. Features: {len(feature_importances)}, "
+            f"Columnas: {len(original_columns)}")
         feature_importance_df = pd.DataFrame(
             feature_importances,
             index=original_columns[:len(feature_importances)],
@@ -50,15 +49,12 @@ def analizar_factores_obesidad(X, y):
             columns=["Importancia"]
         )
 
-    # Normalizar importancias para que sumen 1 y ordenarlas
     feature_importance_df["Importancia"] /= feature_importance_df["Importancia"].sum()
     feature_importance_df = feature_importance_df.sort_values("Importancia", ascending=False)
 
-    # Clasificar variables como modificables o no modificables
     no_modificables = ['Gender', 'Age', 'Height', 'family_history_with_overweight']
     modificables = [col for col in feature_importance_df.index if col not in no_modificables]
 
-    # Filtrar solo las variables modificables y no modificables que están presentes en el índice
     df_modificables = feature_importance_df.loc[
         [col for col in modificables if col in feature_importance_df.index]
     ]
@@ -68,10 +64,8 @@ def analizar_factores_obesidad(X, y):
     ]
 
     df_modificables_normalizado = df_modificables.copy()
-    # **Normalizar solo las importancias de las variables modificables** para que sumen exactamente 1
     df_modificables_normalizado["Importancia"] /= df_modificables_normalizado["Importancia"].sum()
 
-    # Mostrar importancia de las variables modificables
     print("\n=== FACTORES QUE EL USUARIO PUEDE CONTROLAR ===")
     print("Importancia de factores modificables (ordenados por importancia):")
     print(df_modificables_normalizado)
@@ -82,14 +76,12 @@ def analizar_factores_obesidad(X, y):
     print("\n=== FACTORES NO CONTROLABLES ===")
     print(df_no_modificables)
 
-    # Mostrar importancia total de cada grupo
     imp_modificables = df_modificables["Importancia"].sum()
     imp_no_modificables = df_no_modificables["Importancia"].sum()
 
     print(f"\nImportancia total de factores controlables: {imp_modificables * 100:.1f}%")
     print(f"Importancia total de factores no controlables: {imp_no_modificables * 100:.1f}%")
 
-    # Gráfico de barras para variables modificables con leyenda
     plt.figure(figsize=(10, 6))
     sns.barplot(x=df_modificables_normalizado.Importancia, y=df_modificables_normalizado.index, palette="viridis",
                 hue=df_modificables_normalizado.index, legend=False, data=df_modificables_normalizado)
@@ -101,7 +93,6 @@ def analizar_factores_obesidad(X, y):
     plt.show()
     plt.close()
 
-    # Gráfico de pastel comparando modificables vs no modificables
     plt.figure(figsize=(8, 8))
     plt.pie([imp_modificables, imp_no_modificables],
             labels=['Factores Controlables', 'Factores No Controlables'],
@@ -131,28 +122,23 @@ def analizar_peso_por_edad(df):
         df (DataFrame): Dataset con columnas 'Age' y 'NObeyesdad'
     """
 
-    # Verificar que estén las columnas necesarias
     if 'Age' not in df.columns or 'NObeyesdad' not in df.columns:
         print("Error: el DataFrame debe contener las columnas 'Age' y 'NObeyesdad'.")
         return
 
-    # 1. Crear grupos de edad
     bins = [14, 20, 30, 40, 50, 61]
     labels = ['14-20', '21-30', '31-40', '41-50', '51-61']
     df['Grupo_Edad'] = pd.cut(df['Age'], bins=bins, labels=labels, include_lowest=True)
 
-    # 2. Calcular proporciones por grupo de edad
     distribucion = df.groupby(['Grupo_Edad', 'NObeyesdad']).size().unstack().fillna(0)
     proporciones = distribucion.div(distribucion.sum(axis=1), axis=0)
 
-    # 3. Mostrar valores
     print("\n📊 Cantidad de usuarios por grupo de edad y tipo de peso:")
     print(distribucion)
 
     print("\n📈 Proporciones por grupo de edad (0 a 1):")
     print(proporciones)
 
-    # 3. Gráfico de barras horizontales
     proporciones.plot(kind='barh', stacked=True, figsize=(10, 6), colormap='tab20')
     plt.title('Distribución de Tipos de Peso por Grupo de Edad')
     plt.xlabel('Proporción')

@@ -4,7 +4,6 @@ import pickle
 def cargar_modelos():
     with open("resultados_modelo/modelo_obesidad.pkl", "rb") as f:
         modelo_tuple = pickle.load(f)
-        # Si el modelo es una tupla, tomamos el primer elemento que debería ser el modelo real
         if isinstance(modelo_tuple, tuple):
             modelo = modelo_tuple[0]
         else:

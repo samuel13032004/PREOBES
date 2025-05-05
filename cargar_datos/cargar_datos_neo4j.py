@@ -7,6 +7,7 @@ PASSWORD = "ObesityDataSet"
 
 driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 
+
 def obtener_datos_completos():
     query = """
     MATCH (p:Persona)  
@@ -31,6 +32,7 @@ def obtener_datos_completos():
     with driver.session() as session:
         result = session.run(query)
         return pd.DataFrame([dict(record) for record in result])
+
 
 personas = obtener_datos_completos()
 driver.close()

@@ -1,6 +1,4 @@
-        // Inicializar gráficos cuando se carga la página
         document.addEventListener('DOMContentLoaded', function() {
-            // Gráfico de impacto de factores
             const ctxImpact = document.getElementById('factorImpactChart').getContext('2d');
             const impactChart = new Chart(ctxImpact, {
                 type: 'bar',
@@ -57,7 +55,6 @@
                 }
             });
 
-            // Gráfico de distribución de riesgo
             const ctxDistribution = document.getElementById('riskDistributionChart').getContext('2d');
             const distributionChart = new Chart(ctxDistribution, {
                 type: 'doughnut',
@@ -89,7 +86,6 @@
             });
         });
 
-// Grafo de relaciones
         document.querySelectorAll('.tab').forEach(function(tab) {
                 tab.addEventListener('click', function() {
                     if (this.textContent.includes('Análisis de Relaciones')) {
@@ -100,10 +96,8 @@
 
 
         function cargarGrafoRelaciones() {
-            // Limpiar el contenedor por si se ha cargado previamente
             document.getElementById('grafoRelaciones').innerHTML = '';
 
-            // Datos completos para el grafo
             const nodos = [
                 { id: "Weight", type: "numeric", description: "Peso del individuo en kg" },
                 { id: "Height", type: "numeric", description: "Altura del individuo en cm" },
@@ -155,11 +149,9 @@
 
             ];
 
-            // Configuración del grafo
             const width = document.getElementById('grafoRelaciones').clientWidth;
             const height = 600;
 
-            // Crear el SVG
             const svg = d3.select("#grafoRelaciones")
                 .append("svg")
                 .attr("width", width)
@@ -179,14 +171,12 @@
                 .style("z-index", "10")
                 .style("font-size", "14px")
                 .style("max-width", "250px");
-            // Crear la simulación de fuerza
             const simulation = d3.forceSimulation(nodos)
                 .force("link", d3.forceLink(enlaces).id(d => d.id).distance(120))
                 .force("charge", d3.forceManyBody().strength(-300))
                 .force("center", d3.forceCenter(width / 2, height / 2))
                 .force("collision", d3.forceCollide().radius(40));
 
-            // Definir colores para los tipos de relaciones
             const colorRelacion = {
                 "positive": "#4CAF50",
                 "negative": "#F44336",
@@ -194,12 +184,9 @@
                 "chi2": "#9C27B0"
             };
             const lineWidth = d => {
-                // Si la fortaleza no está definida, usa 2 como valor predeterminado
                 if (!d.strength) return 2;
-                // Mapea la fortaleza (normalmente entre 0 y 1) a valores entre 1 y 5
                 return 1 + (d.strength * 4);
             };
-            // Crear las líneas para los enlaces
             const link = svg.append("g")
                 .selectAll("line")
                 .data(enlaces)
@@ -208,7 +195,6 @@
                 .attr("stroke", d => colorRelacion[d.type])
                 .attr("stroke-width", lineWidth);
 
-            // Crear los círculos para los nodos
             const node = svg.append("g")
                 .selectAll("circle")
                 .data(nodos)
@@ -233,7 +219,6 @@
                             .duration(500)
                             .style("opacity", 0);
                     });
-            // Añadir etiquetas a los nodos
             const text = svg.append("g")
                 .selectAll("text")
                 .data(nodos)
@@ -245,32 +230,25 @@
                 .attr("dy", 3)
                 .attr("fill", "#fff")
                 .attr("font-size", d => {
-                    // Ajustar el tamaño de la fuente según la longitud del texto
-                    // Palabras especiales que queremos asegurar que se ven bien
                     const specialWords = ["Weight", "Height", "MTRANS", "Gender","SMOKE"];
 
-                    // Tamaño fijo para palabras especiales
                     if (specialWords.includes(d.id)) {
-                        return 8; // Tamaño fijo para estas palabras
+                        return 8;
                     }
 
-                    // Para el resto, usar la lógica de ajuste automático
                     const textLength = d.id.length;
                     return Math.max(8, Math.min(12, 18 - textLength));
                 })
                 .text(d => {
-                    // Acortar el texto si es muy largo
                     if (d.id.length > 10) {
                         return d.id.slice(0, 7) + "...";
                     }
                     return d.id;
                 });
 
-            // Crear una leyenda
             const legend = svg.append("g")
                 .attr("transform", "translate(20, 20)");
 
-            // Añadir elementos de la leyenda
             const legendData = [
                 { label: "Correlación Positiva", color: "#4CAF50", type: "line" },
                 { label: "Correlación Negativa", color: "#F44336", type: "line" },
@@ -308,7 +286,6 @@
                     .attr("fill", "#e0e0e0");
             });
 
-            // Actualizar la posición en cada tick
             simulation.on("tick", () => {
                 link
                     .attr("x1", d => d.source.x)
@@ -325,11 +302,9 @@
                     .attr("y", d => d.y);
             });
 
-            // Agregar tooltips
             node.append("title")
                 .text(d => d.id);
 
-            // Funciones para el arrastre
             function dragstarted(event, d) {
                 if (!event.active) simulation.alphaTarget(0.3).restart();
                 d.fx = d.x;
@@ -373,7 +348,6 @@
                 const isCategorical = data.is_categorical;
                 const categories = data.categories;
 
-                // Destruir la gráfica existente si existe
                 const existingChart = Chart.getChart("evolucionChart");
                 if (existingChart) {
                     existingChart.destroy();
@@ -391,8 +365,8 @@
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderWidth: 2,
                             tension: 0.1,
-                            pointRadius: 4,  // 🔹 Puntos más pequeños
-                            pointHoverRadius: 6 // 🔹 Aumenta el tamaño al pasar el ratón
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }]
                     },
                     options: {
@@ -402,9 +376,9 @@
                                 display: true,
                                 text: `Evolución de ${variableLabel}`
                             },
-                            tooltip: { // 🔹 Tooltip mejorado
+                            tooltip: {
                                 enabled: true,
-                                animation: false, // 🔹 Aparece al instante
+                                animation: false,
                                 callbacks: {
                                     label: function(context) {
                                         const reportNumber = labels[context.dataIndex];
@@ -456,8 +430,6 @@
             });
     }
 });
-//Matriz de correlacion
-
 
         const correlationData = [
                 [1.0, -0.02577, 0.20345, 0.24507, 0.01702, -0.04395, -0.04558, -0.14508, -0.29661],
@@ -475,40 +447,30 @@
 
             const matrix = document.querySelector('.correlation-matrix');
 
-            // Color mapping function
             function getColor(value) {
-                // Absolute value for consistent coloring
                 const absValue = Math.abs(value);
 
-                // Diagonal case
                 if (absValue === 1) {
-                    return 'rgb(76, 175, 80)'; // Solid green
+                    return 'rgb(76, 175, 80)';
                 }
 
-                // Positive correlations (green spectrum)
                 if (value > 0) {
-                    // More intense green for stronger positive correlations
                     const intensity = Math.min(255, Math.floor(absValue * 255));
                     return `rgb(${255 - intensity}, 255, ${255 - intensity})`;
                 }
 
-                // Negative correlations (red spectrum)
                 if (value < 0) {
-                    // More intense red for stronger negative correlations
                     const intensity = Math.min(255, Math.floor(absValue * 255));
                     return `rgb(255, ${255 - intensity}, ${255 - intensity})`;
                 }
 
-                // Neutral (very weak) correlations
                 return 'rgb(245, 245, 245)';
             }
 
-            // Add empty cell for top-left corner
             const emptyCell = document.createElement('div');
             emptyCell.classList.add('matrix-cell');
             matrix.appendChild(emptyCell);
 
-            // Add horizontal headers
             headers.forEach(header => {
                 const headerCell = document.createElement('div');
                 headerCell.textContent = header;
@@ -516,9 +478,7 @@
                 matrix.appendChild(headerCell);
             });
 
-            // Create matrix cells
             correlationData.forEach((row, rowIndex) => {
-                // Add vertical header
                 const verticalHeader = document.createElement('div');
                 verticalHeader.textContent = headers[rowIndex];
                 verticalHeader.classList.add('matrix-cell', 'header');
@@ -528,14 +488,9 @@
                     const cell = document.createElement('div');
                     cell.textContent = value.toFixed(3);
                     cell.classList.add('matrix-cell');
-
-                    // Set background color based on correlation value
                     cell.style.backgroundColor = getColor(value);
-
-                    // Ensure readability of text
                     cell.style.color = 'black';
 
-                    // Diagonal cells styling
                     if (rowIndex === colIndex) {
                         cell.classList.add('diagonal');
                     }
@@ -544,8 +499,6 @@
                 });
             });
 
-
-            // fecha de nacimiento
          document.getElementById("birthdate").addEventListener("change", function () {
             const birthdate = new Date(this.value);
             const today = new Date();
@@ -557,17 +510,13 @@
             console.log("Edad calculada:", age);
         });
 
-
-         // Función para cargar los informes cuando se abra la pestaña correspondiente
 function loadUserReports() {
     const reportsContainer = document.getElementById('reports-container');
     const loadingElement = document.getElementById('loading-reports');
 
-    // Mostrar mensaje de carga
     if (loadingElement) loadingElement.style.display = 'block';
     if (reportsContainer) reportsContainer.innerHTML = '';
 
-    // Realizar la petición AJAX para obtener los informes
     fetch('/api/user_reports')
         .then(response => {
             if (!response.ok) {
@@ -576,12 +525,9 @@ function loadUserReports() {
             return response.json();
         })
         .then(data => {
-            // Ocultar mensaje de carga
             if (loadingElement) loadingElement.style.display = 'none';
 
-            // Verificar si hay informes
             if (data.reports && data.reports.length > 0) {
-                // Crear lista de informes
                 const reportsList = document.createElement('ul');
                 reportsList.className = 'reports-list';
 
@@ -598,7 +544,6 @@ function loadUserReports() {
 
                 reportsContainer.appendChild(reportsList);
             } else {
-                // Mostrar mensaje si no hay informes
                 reportsContainer.innerHTML = '<p>No tienes informes generados aún.</p>';
             }
         })
@@ -609,7 +554,6 @@ function loadUserReports() {
         });
 }
 
-// Modificar la función openTab para cargar los informes cuando se seleccione esa pestaña
 function openTab(tabName) {
     const tabContents = document.getElementsByClassName('tab-content');
     for (let i = 0; i < tabContents.length; i++) {
@@ -622,15 +566,12 @@ function openTab(tabName) {
     document.getElementById(tabName).classList.add('active');
     event.currentTarget.classList.add('active');
 
-    // Si se selecciona la pestaña de informes, cargar los informes
     if (tabName === 'mis_informes') {
         loadUserReports();
     }
 }
 
-// También podemos cargar los informes cuando la página se cargue completamente
 document.addEventListener('DOMContentLoaded', function() {
-    // Si la pestaña activa es la de informes, cargar informes
     if (document.getElementById('mis_informes').classList.contains('active')) {
         loadUserReports();
     }
@@ -642,10 +583,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (form) {
         form.addEventListener('submit', function() {
-            // Mostrar el spinner cuando se envía el formulario
             spinnerOverlay.style.display = 'flex';
 
-            // Para asegurarse de que el spinner se oculte si hay algún error
             return true;
         });
     }
@@ -663,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
       })
       .then(data => {
-        // Si ya existe un gráfico previo, destruirlo antes de crear uno nuevo
         if (categoriaChart) {
           categoriaChart.destroy();
         }
@@ -678,8 +616,7 @@ document.addEventListener('DOMContentLoaded', function() {
           CALC: "Consumo Alcohol",
           MTRANS: "Medio de Transporte",
           SMOKE: "Fumar",
-          SCC: "Sedentarismo",
-          FAF: "Frecuencia Actividad Física"
+          SCC: "Sedentarismo"
         };
 
         categoriaChart = new Chart(ctx, {
@@ -689,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: data.datasets
           },
           options: {
-            indexAxis: 'y', // Barras horizontales
+            indexAxis: 'y',
             responsive: true,
             plugins: {
               legend: {
@@ -729,5 +666,4 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   });
 
-  // Opcional: cargar el gráfico por defecto al iniciar
   document.getElementById('categoriaSelect').dispatchEvent(new Event('change'));

@@ -14,27 +14,23 @@ def analizar_importancia(X, y):
         X: DataFrame con las variables predictoras
         y: Serie con la variable objetivo
     """
-    # Estandarización de los datos
+
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-    # Modelo de Random Forest para análisis de importancia
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
 
-    # Cálculo de importancias
     X_features = list(X.columns)
 
     feature_importances = model.feature_importances_
     feature_importance_df = pd.DataFrame(feature_importances, index=X.columns, columns=["Importancia"])
 
-    # Normalizar importancias para que sumen 1 y ordenarlas
     feature_importance_df["Importancia"] /= feature_importance_df["Importancia"].sum()
     feature_importance_df = feature_importance_df.sort_values("Importancia", ascending=False)
 
-    # Mostrar importancia de las variables
     print("Importancia de las variables (normalizadas para sumar 1):")
     print(feature_importance_df)
 

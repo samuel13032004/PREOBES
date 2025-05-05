@@ -11,7 +11,6 @@ from correlaciones.analisis_relaciones import analisis_completo_neo4j, crear_mat
 from entrenamiento_modelo.clasificacion import entrenar_modelo, predecir
 from analisis_variables.analisis_factores import analizar_factores_obesidad, analizar_peso_por_edad
 
-# Archivo para almacenar la última decisión de ejecutar el análisis
 CONFIG_FILE = '.analysis_config'
 
 
@@ -39,28 +38,25 @@ def realizar_analisis():
     print("\n1. CARGANDO DATOS DESDE MONGODB...")
     try:
         df, X, y = cargar_datos()
-        print(f"✓ Datos cargados exitosamente: {len(df)} registros, {len(X.columns)} variables")
+        print(f"Datos cargados exitosamente: {len(df)} registros, {len(X.columns)} variables")
     except Exception as e:
-        print(f"✗ Error al cargar datos: {str(e)}")
+        print(f"X Error al cargar datos: {str(e)}")
         return None, None, None, None
     print("\n2. ANALIZANDO IMPORTANCIA DE VARIABLES...")
     try:
         analizar_importancia(X, y)
     except Exception as e:
-        print(f"✗ Error en análisis de importancia: {str(e)}")
+        print(f"X Error en análisis de importancia: {str(e)}")
 
     """
-        # 3. Entrenamiento del modelo
         print("\n3. ENTRENANDO MODELO DE CLASIFICACIÓN...")
         try:
             modelo, le, scaler = entrenar_modelo(X, y)
-            print(f"✓ Modelo entrenado exitosamente")
+            print(f"Modelo entrenado exitosamente")
 
-            # Hacer algunas predicciones de ejemplo (usando los primeros 5 registros)
             muestra = X.iloc[:5]
             predicciones = predecir(modelo, le, scaler, muestra)
 
-            # Guardar resultados de ejemplo
             resultados = pd.DataFrame({
                 'Predicción': predicciones,
                 'Valor real': y.iloc[:5].values
@@ -70,7 +66,7 @@ def realizar_analisis():
             print(resultados)
 
         except Exception as e:
-            print(f"✗ Error en entrenamiento del modelo: {str(e)}")
+            print(f"X Error en entrenamiento del modelo: {str(e)}")
 
         print("\n" + "=" * 80)
         print("=" * 80)
@@ -80,7 +76,7 @@ def realizar_analisis():
     try:
         analizar_peso_por_edad(df)
         resultados_analisis = analizar_factores_obesidad(X, y)
-        print(f"✓ Análisis de factores de obesidad completado")
+        print(f"Análisis de factores de obesidad completado")
         factores_modificables = resultados_analisis['factores_modificables']
         factores_no_modificables = resultados_analisis['factores_no_modificables']
         modelo_rf = resultados_analisis['modelo']
@@ -105,11 +101,10 @@ def realizar_analisis():
         driver.close()
         return modelo_rf, scaler_rf, le, model_columns
     except Exception as e:
-        print(f"✗ Error en análisis de factores de obesidad: {str(e)}")
+        print(f"X Error en análisis de factores de obesidad: {str(e)}")
         return None, None, None, None
 
 
-# Variables globales para almacenar modelos y conexiones
 modelo = None
 scaler = None
 le = None
@@ -118,18 +113,14 @@ users_collection = None
 reports_collection = None
 
 
-# Función para inicializar modelos
 def inicializar_modelos():
     global modelo, scaler, le, model_columns
 
-    # Siempre preguntar al usuario, pero solo la primera vez que se ejecuta el script
-    if os.environ.get("FLASK_RUN_FROM_CLI") != "false":  # Solo para la primera ejecución
+    if os.environ.get("FLASK_RUN_FROM_CLI") != "false":
         obtener_ultima_decision()
 
-        # Si no hay decisión guardada o queremos preguntar cada vez, pedimos input
         ejecutar_analisis = input("¿Desea ejecutar el análisis de datos? (s/n): ").lower()
 
-        # Guardar la decisión para futuras consultas
         guardar_decision(ejecutar_analisis)
 
         if ejecutar_analisis == 's':
@@ -140,52 +131,46 @@ def inicializar_modelos():
         else:
             try:
                 modelo, scaler, le, model_columns = cargar_modelos()
-                print("✓ Modelos cargados exitosamente desde archivos existentes")
+                print("Modelos cargados exitosamente desde archivos existentes")
             except Exception as e:
-                print(f"✗ Error: No se pueden cargar los modelos. Debe ejecutar el análisis primero: {str(e)}")
+                print(f"X Error: No se pueden cargar los modelos. Debe ejecutar el análisis primero: {str(e)}")
                 exit(1)
     else:
-        # Para los reinicios, usar la última decisión guardada
         guardar_decision("n")
         ultima_decision = obtener_ultima_decision()
         if ultima_decision == 's':
             try:
                 modelo, scaler, le, model_columns = realizar_analisis()
             except Exception as e:
-                print(f"✗ Error en el análisis: {str(e)}")
+                print(f"X Error en el análisis: {str(e)}")
                 exit(1)
         else:
             try:
                 modelo, scaler, le, model_columns = cargar_modelos()
             except Exception as e:
-                print(f"✗ Error al cargar modelos: {str(e)}")
+                print(f"X Error al cargar modelos: {str(e)}")
                 exit(1)
 
     return modelo, scaler, le, model_columns
 
 
-# Crear la aplicación Flask
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.secret_key = 'your_secret_key_here'
+app.secret_key = 'PREOBES'
 
-# Inicializar modelos antes de crear la aplicación
 modelo, scaler, le, model_columns = inicializar_modelos()
 
 if __name__ == '__main__':
-    # Establecer variable de entorno para identificar la ejecución desde CLI
     os.environ["FLASK_RUN_FROM_CLI"] = "true"
 
-    # Inicializar conexiones y configurar rutas
     token_openai = os.getenv("apikey")
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db, db_collection, users_collection, reports_collection = cargar_datos_mongo(client)
-    configurar_rutas_configuracion(app, modelo, scaler, le, model_columns,db_collection,
-                                   users_collection, reports_collection, token_openai)
+    configurar_rutas_configuracion(app, modelo, scaler, le, model_columns, db_collection,
+                                   users_collection, reports_collection)
 
-    print("✓ Iniciando servidor Flask...")
+    print("Iniciando servidor Flask...")
 
-    # Cambiar a False cuando Flask se reinicie internamente
     os.environ["FLASK_RUN_FROM_CLI"] = "false"
 
-    app.run(debug=True, use_reloader=True)
+    app.run(host='localhost', port=8080, debug=True, use_reloader=True)

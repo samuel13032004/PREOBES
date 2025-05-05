@@ -45,7 +45,6 @@
         <div class="recommendation">
             <h3>Recomendaciones personalizadas <span class="ai-badge">Generado por IA</span></h3>
 
-            <!-- Mostrar recomendaciones generadas por IA -->
             {% if ai_recommendation %}
                 {% for paragraph in ai_recommendation.split('\n\n') %}
                     {% if paragraph.strip() %}

@@ -81,28 +81,3 @@ body {
     background-color: #d4edda;
     color: #155724;
 }
-
-
-
-
-body {
-    font-family: Arial, sans-serif;
-    background-image: url("../images/fondos_preobes.png");
-    background-size: contain; /* Ajusta la imagen para que no ocupe toda la pantalla */
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    backdrop-filter: brightness(0.9);
-}
-
-.auth-container {
-    background-color: rgba(255, 255, 255, 0.95); /* transparencia suave para dejar ver el fondo */
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    padding: 30px;
-    width: 350px;
-}

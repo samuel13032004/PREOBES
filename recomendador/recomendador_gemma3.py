@@ -15,20 +15,19 @@ def calcular_edad(fecha_nacimiento):
 
 def calcular_edad_en_fecha(birthdate: str, report_date: str) -> int:
     """ Calcula la edad de una persona en la fecha de un informe. """
-    birth_date = datetime.strptime(birthdate, "%Y-%m-%d")  # Convierte birthdate a objeto datetime
-    report_date = datetime.strptime(report_date, "%Y-%m-%d")  # Convierte report_date a objeto datetime
+    birth_date = datetime.strptime(birthdate, "%Y-%m-%d")
+    report_date = datetime.strptime(report_date, "%Y-%m-%d")
 
     edad = report_date.year - birth_date.year - (
                 (report_date.month, report_date.day) < (birth_date.month, birth_date.day))
     return edad
 
 
-def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_openai):
+def get_ai_recommendation(user_data, prediction, imc, reports_collection):
     """
     Genera recomendaciones personalizadas usando la API de OpenAI
     basadas en los datos del usuario y la predicción
     """
-    # Convertir datos numéricos a valores legibles
     user_id = session.get('user_id')
 
     birthdate = user_data.get('birthdate')
@@ -38,12 +37,10 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
     weight = user_data.get('Weight')
     gender = user_data.get('Gender')
 
-    # Conversión de parámetros booleanos
-    family_history = "Sí" if user_data.get('family_history') == 'yes' else "No"
+    family_history = "Sí" if user_data.get('family_history_with_overweight') == 'yes' else "No"
     favc = "Sí" if user_data.get('FAVC') == 'yes' else "No"
     smoke = "Sí" if user_data.get('SMOKE') == 'yes' else "No"
 
-    # Extracción de parámetros adicionales
     physical_activity = user_data.get('FAF', '0')
     water_consumption = user_data.get('CH2O', 'No especificado')
     alcohol_consumption = user_data.get('CALC', 'No especificado')
@@ -53,13 +50,12 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
     transport_method = user_data.get('MTRANS', 'No especificado')
     calorie_control = user_data.get('SCC', 'No especificado')
 
-    # Obtener reportes previos de la base de datos
-    previous_reports = reports_collection.find({"user_id": user_id}).sort("date", -1).limit(5)  # 5 últimos informes
+    previous_reports = reports_collection.find({"user_id": user_id}).sort("date", -1).limit(5)
 
     field_mapping = {
         "Height": "Altura",
         "Weight": "Peso",
-        "family_history": "Historial familiar de obesidad",
+        "family_history_with_overweight": "Historial familiar de obesidad",
         "FAVC": "Consumo frecuente de alimentos altos en calorías",
         "FCVC": "Frecuencia de consumo de vegetales",
         "NCP": "Número de comidas por día",
@@ -73,7 +69,6 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
         "SMOKE": "Fumador"
     }
 
-    # Crear un resumen de los reportes previos
     previous_reports_summary = ""
     for report in previous_reports:
         report_number = report['report_number']
@@ -83,7 +78,6 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
         report_prediction = report['prediction']
         report_age = calcular_edad_en_fecha(user_data.get('birthdate'), report_date_2)
 
-        # Filtrar los datos personales antes de incluir form_data
         report_form_data = report.get('form_data', {})
         filtered_form_data = {k: v for k, v in report_form_data.items() if
                               k not in ['user_id', 'Name', 'Surname', 'Gender', 'birthdate', 'age']}
@@ -92,7 +86,6 @@ def get_ai_recommendation(user_data, prediction, imc, reports_collection, token_
             f"{field_mapping.get(k, k)}: {v}" for k, v in filtered_form_data.items()
         )
 
-        # Construir una cadena con los detalles del reporte
         previous_reports_summary += f"""
 Reporte {report_number} (Fecha: {report_date}):
 - Edad en el informe: {report_age} años
@@ -101,7 +94,6 @@ Reporte {report_number} (Fecha: {report_date}):
 - Datos del Formulario: {formatted_form_data}
             """
 
-    # Mapeo de categorías de predicción
     prediction_mapping = {
         "Insufficient_Weight": "Peso Insuficiente",
         "Normal_Weight": "Peso Normal",

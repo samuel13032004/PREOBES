@@ -1,4 +1,4 @@
-  :root {
+ :root {
             --primary-color: #4e73df;
             --secondary-color: #1cc88a;
             --background-color: #121212;
@@ -54,7 +54,6 @@
             opacity: 0.8;
         }
 
-        /* Estilo de pestañas */
         .tabs {
             display: flex;
             border-bottom: 1px solid #333;
@@ -231,7 +230,6 @@
             background-size: 16px;
         }
 
-        /* Estilos para la pestaña de análisis */
         .chart-container {
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: var(--border-radius);
@@ -289,9 +287,6 @@
                 grid-template-columns: 1fr;
             }
         }
-
-
-/* Gráfico de evolución */
 
 
 .evolucion-chart-container {
@@ -358,14 +353,11 @@
     background-color: #218838;
 }
 
-/* Ensure the chart is centered */
 #evolucion .evolucion-chart-container {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-/* Matriz de Correlacion */
 
 
 body {
@@ -414,7 +406,7 @@ body {
             display: flex;
             justify-content: space-between;
             align-items: center;
-                color: #000; /* Texto negro para todos los elementos dentro de los items */
+                color: #000;
 
         }
 
@@ -476,7 +468,6 @@ body {
             100% { transform: rotate(360deg); }
         }
 
-
          .user-badge {
         position: absolute;
         top: 20px;
@@ -499,8 +490,6 @@ body {
     .user-badge:hover {
         background-color: #353b48;
     }
-
-
 
     .bloque-correlaciones {
     display: flex;

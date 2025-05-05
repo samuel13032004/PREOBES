@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 import bcrypt
 import uuid
 from flask import render_template, request, redirect, url_for, session, flash
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 
@@ -24,25 +24,21 @@ def setup_auth_routes(app, users_collection):
             birthdate = request.form['birthdate']
             email = request.form['email']
 
-            # Check if user already exists
             existing_user = users_collection.find_one({"username": username})
             if existing_user:
                 flash('Username already exists. Please choose another.', 'error')
                 return redirect(url_for('register'))
-            """ 
+
             existing_email = users_collection.find_one({"email": email})
             if existing_email:
                 flash('Este correo ya está registrado.', 'error')
                 return redirect(url_for('register'))
-            """
-            # Generate a unique user ID
+
             last_user = users_collection.find_one(sort=[("user_id", -1)])
             user_id = (last_user["user_id"] + 1) if last_user else 1000
 
-            # Hash the password
             hashed_password = generate_password_hash(password)
 
-            # Create user document
             user_data = {
                 "user_id": user_id,
                 "username": username,
@@ -56,7 +52,6 @@ def setup_auth_routes(app, users_collection):
                 "created_at": datetime.now()
             }
 
-            # Insert user into database
             users_collection.insert_one(user_data)
 
             flash('Registration successful. Please log in.', 'success')
@@ -70,22 +65,26 @@ def setup_auth_routes(app, users_collection):
             username = request.form['username']
             password = request.form['password']
 
-            # Find user
             user = users_collection.find_one({"username": username})
 
-            if user and bcrypt.checkpw(password.encode(), user['password']):
-                # Create session
-                session['user_id'] = user['user_id']
-                session['username'] = user['username']
-                session['name'] = user['name']
-                session['surname'] = user['surname']
-                session['birthdate'] = user['birthdate']
-                session['Gender'] = user['Gender']
+            if user:
+                try:
+                    is_valid = check_password_hash(user['password'], password)
+                except TypeError:
+                    is_valid = bcrypt.checkpw(password.encode(), user['password'])
 
-                flash('Login successful!', 'success')
-                return redirect(url_for('dashboard'))
-            else:
-                flash('Invalid username or password', 'error')
+                if is_valid:
+                    session['user_id'] = user['user_id']
+                    session['username'] = user['username']
+                    session['name'] = user['name']
+                    session['surname'] = user['surname']
+                    session['birthdate'] = user['birthdate']
+                    session['Gender'] = user['Gender']
+
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('dashboard'))
+
+            flash('Invalid username or password', 'error')
 
         return render_template('login.html')
 
@@ -119,11 +118,9 @@ def setup_auth_routes(app, users_collection):
         if request.method == 'POST':
             nueva_password = request.form['password']
 
-            # Generar un salt y el hash de la nueva contraseña
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(nueva_password.encode(), salt)
 
-            # Actualizar la contraseña en la base de datos
             users_collection.update_one(
                 {"user_id": user['user_id']},
                 {"$set": {"password": hashed_password}, "$unset": {"reset_token": ""}}

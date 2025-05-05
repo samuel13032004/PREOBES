@@ -1,6 +1,5 @@
 import pandas as pd
 from flask import render_template, session, redirect, url_for, flash, request, jsonify
-from pymongo import MongoClient
 
 
 def setup_dashboard_routes(app, db_collection, users_collection, reports_collection):
@@ -18,7 +17,6 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
             flash('Please log in to access the dashboard', 'error')
             return redirect(url_for('login'))
 
-        # Fetch user's reports
         user_reports = list(reports_collection.find({"user_id": session['user_id']}).sort("report_number", 1))
 
         return render_template('index.html',
@@ -31,7 +29,7 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
         if not user_id:
             return jsonify({"error": "You need to log in to access this data"}), 401
 
-        variable = request.args.get("variable")  # Por defecto IMC
+        variable = request.args.get("variable")
 
         reports = list(reports_collection.find({"user_id": user_id}).sort("report_number", 1))
 
@@ -66,7 +64,6 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
                 value = r["form_data"].get(variable)
 
             if is_categorical:
-                # Convertir el valor a su índice dentro de la lista de categorías
                 value = categories.index(value) if value in categories else None
             else:
                 value = float(value) if isinstance(value, (int, float, str)) and str(value).replace('.', '',
@@ -126,7 +123,6 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
                             'report_number': report_number
                         })
 
-        # Ordenar por número de informe
         try:
             user_reports.sort(key=lambda x: int(x['report_number']), reverse=True)
         except (ValueError, TypeError):
@@ -139,11 +135,9 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
         datos = list(db_collection.find({}, {"_id": 0}))
         df = pd.DataFrame(datos)
 
-        # Convertir edad a numérico
         df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
         df.dropna(subset=['Age'], inplace=True)
 
-        # Crear grupos de edad
         bins = [14, 20, 30, 40, 50, 61]
         labels = ['14-20', '21-30', '31-40', '41-50', '51-61']
         df['Grupo_Edad'] = pd.cut(df['Age'], bins=bins, labels=labels, include_lowest=True)
@@ -151,7 +145,6 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
         if variable not in df.columns:
             return jsonify({"error": f"La variable '{variable}' no está disponible."}), 404
 
-        # Diccionario de traducción
         traducciones = {
             "yes": "Sí",
             "no": "No",
@@ -174,22 +167,18 @@ def setup_dashboard_routes(app, db_collection, users_collection, reports_collect
             "Obesity_Type_III": "Obesidad tipo III"
         }
 
-        # Calcular proporciones
-        distribucion = df.groupby(['Grupo_Edad', variable]).size().unstack().fillna(0)
+        distribucion = df.groupby(['Grupo_Edad', variable], observed=False).size().unstack().fillna(0)
 
-        # Aplicar traducciones a las columnas
         distribucion.columns = [traducciones.get(str(col), str(col)) for col in distribucion.columns]
 
         proporciones = distribucion.div(distribucion.sum(axis=1), axis=0)
 
-        # Colores para cada categoría
         colores = [
             "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
             "#9966FF", "#FF9F40", "#C9CBCF", "#8AFFC1",
             "#A569BD", "#58D68D", "#F4D03F", "#DC7633"
         ]
 
-        # Formato para Chart.js
         resultado = {
             "labels": list(proporciones.index.astype(str)),
             "datasets": [

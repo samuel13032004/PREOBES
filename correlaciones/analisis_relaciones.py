@@ -13,6 +13,7 @@ PASSWORD = "ObesityDataSet"
 
 driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 
+
 def analizar_dataset(df):
     print(f"Dimensiones del dataset: {df.shape}")
     print("\nValores nulos por columna:")
@@ -45,7 +46,7 @@ def generar_reporte(correlaciones_significativas):
         elif method == "ANOVA":
             print(f"{i}. {var1} y {var2}: Asociación por ANOVA (eta²={coef:.3f}, p={corr['p_value']:.4f})")
         else:
-            print(f"{i}. {var1} y {var2}: Asociación por Chi² (V={coef:.3f}, p={corr['p_value']:.4f})")
+            print(f"{i}. {var1} y {var2}: Asociación por Chi2 (V={coef:.3f}, p={corr['p_value']:.4f})")
 
 
 def analizar_correlacion(df, var1, var2):
@@ -243,7 +244,7 @@ def crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, umb
             color = 'green' if correlacion > 0 else 'red'
         elif metodo == "ANOVA":
             color = 'orange'
-        else:  # Chi²
+        else:
             color = 'purple'
 
         G.add_edge(origen, destino,
@@ -272,7 +273,7 @@ def crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, umb
         Line2D([0], [0], color='green', lw=4, label='Correlación Positiva'),
         Line2D([0], [0], color='red', lw=4, label='Correlación Negativa'),
         Line2D([0], [0], color='orange', lw=4, label='ANOVA'),
-        Line2D([0], [0], color='purple', lw=4, label='Chi²'),
+        Line2D([0], [0], color='purple', lw=4, label='Chi2'),
         Line2D([0], [0], marker='o', color='w', label='Var. Numérica', markerfacecolor='skyblue', markersize=15),
         Line2D([0], [0], marker='o', color='w', label='Var. Categórica', markerfacecolor='lightgreen', markersize=15)
     ]
@@ -282,7 +283,6 @@ def crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, umb
     plt.axis('off')
     plt.tight_layout()
 
-    # Guardar como PNG
     plt.savefig(filename, dpi=300, bbox_inches='tight')
     print(f"Grafo exportado como imagen PNG: {filename}")
     plt.show()
@@ -290,12 +290,14 @@ def crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, umb
     return plt
 
 
-def exportar_grafo_existente_a_png(correlaciones_significativas, filename="../PREOBES/graficos/grafo_relaciones_neo4j.png"):
+def exportar_grafo_existente_a_png(correlaciones_significativas,
+                                   filename="../PREOBES/graficos/grafo_relaciones_neo4j.png"):
     """
     Toma las correlaciones ya calculadas, crea el grafo en Neo4j y lo exporta como PNG
     """
     print("Creando grafo en Neo4j y exportando a PNG...")
     return crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas, filename=filename)
+
 
 def analisis_completo_neo4j():
     print("Obteniendo datos de Neo4j...")
@@ -321,17 +323,14 @@ def analisis_completo_neo4j():
 
     resultados_correlaciones = []
 
-    # Para no repetir análisis, usamos combinaciones
     from itertools import combinations
 
-    # Obtener todas las combinaciones de 2 variables
     pares_variables = list(combinations(variables, 2))
     print(f"Analizando {len(pares_variables)} pares de variables...")
 
     total = len(pares_variables)
 
     for i, (var1, var2) in enumerate(pares_variables):
-        # Mostrar progreso cada 10%
         if i % (total // 10) == 0:
             print(f"Progreso: {i / total * 100:.1f}%")
 
@@ -340,14 +339,11 @@ def analisis_completo_neo4j():
 
     df_correlaciones = pd.DataFrame(resultados_correlaciones)
 
-    # 📌 Ordenar por el valor absoluto de la correlación (de mayor a menor)
     df_correlaciones = df_correlaciones.sort_values(by="correlation", key=abs, ascending=False)
 
-    # 📌 Guardar en CSV
     df_correlaciones.to_csv("../PREOBES/correlaciones/correlaciones_variables.csv", index=False)
 
     print(f"\nSe guardaron {len(resultados_correlaciones)} relaciones en correlaciones_variables.csv")
-    # Filtrar correlaciones significativas (p < 0.05)
     correlaciones_significativas = [corr for corr in resultados_correlaciones
                                     if corr['p_value'] < 0.05 and corr['correlation'] is not None]
 
@@ -356,7 +352,6 @@ def analisis_completo_neo4j():
     print("\nCreando grafo de relaciones en Neo4j...")
     crear_grafo_correlaciones_neo4j_y_exportar(correlaciones_significativas)
 
-
     generar_reporte(correlaciones_significativas)
     exportar_grafo_existente_a_png(correlaciones_significativas)
     print("\nAnálisis completo finalizado y grafo creado en Neo4j.")
@@ -364,11 +359,9 @@ def analisis_completo_neo4j():
 
 
 def crear_matriz_correlacion(df=None):
-    # Si no se proporciona un DataFrame, obtener datos de Neo4j
     if df is None:
         df = obtener_datos_completos()
 
-    # Calcular IMC si no está presente
     def calcular_imc(dataframe):
         dataframe['Height'] = pd.to_numeric(dataframe['Height'], errors='coerce')
         dataframe['Weight'] = pd.to_numeric(dataframe['Weight'], errors='coerce')
@@ -377,33 +370,27 @@ def crear_matriz_correlacion(df=None):
 
     df = calcular_imc(df)
 
-    # Seleccionar columnas numéricas
     columnas_numericas = ['Age', 'Height', 'Weight', 'IMC', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
 
-    # Crear matriz de correlación
     matriz_corr = df[columnas_numericas].corr()
 
-    # Visualización de la matriz de correlación
     plt.figure(figsize=(10, 8))
     mapa_calor = sns.heatmap(matriz_corr,
-                             annot=True,  # Mostrar valores numéricos
-                             cmap='coolwarm',  # Mapa de colores
-                             center=0,  # Centrar en 0
+                             annot=True,
+                             cmap='coolwarm',
+                             center=0,
                              vmin=-1,
                              vmax=1,
                              square=True)
 
     plt.title('Matriz de Correlación de Variables Numéricas', fontsize=15)
     plt.tight_layout()
-    # Guardar la matriz de correlación
     plt.savefig('../PREOBES/graficos/matriz_correlacion.png', dpi=300)
     plt.show()
     plt.close()
-    # Imprimir matriz de correlación en consola
     print("Matriz de Correlación:")
     print(matriz_corr)
 
-    # Guardar matriz de correlación en CSV
     matriz_corr.to_csv('../PREOBES/correlaciones/matriz_correlacion.csv')
 
     return matriz_corr
