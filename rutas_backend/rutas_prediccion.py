@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import request, redirect, url_for, flash, render_template, session
 from datetime import datetime
-from recomendador.recomendador_openai import get_ai_recommendation
+from recomendador.recomendador_gemma3 import get_ai_recommendation
 from utilidades.descargar_informe import create_pdf_report
 
 
