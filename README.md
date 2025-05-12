@@ -1,2 +1,2 @@
 # PREOBES
-Desarrollo de un modelo predictivo de obesidad basado en hábitos de vida y factores de salud, utilizando MongoDB, Neo4j Y Python.
+Este proyecto aborda el problema de la obesidad mediante el desarrollo de un modelo predictivo que, a partir de datos sobre hábitos alimenticios, actividad física y otros factores de salud, clasifica el riesgo de una persona de desarrollar esta condición. La motivación principal es contribuir a la prevención y concienciación sobre la obesidad mediante el uso de inteligencia artificial. Además del modelo de predicción, el sistema incluye un recomendador inteligente que ofrece sugerencias personalizadas para mejorar la salud según el perfil de cada usuario.
